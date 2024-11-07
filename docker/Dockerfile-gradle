@@ -1,25 +1,26 @@
-# Используем официальный образ JDK 11 как базовый
-FROM openjdk:11-jdk-slim AS build
+# Используем базовый образ с JDK
+FROM openjdk:11-jdk-slim
 
-# Устанавливаем Gradle 7.4.2 вручную
-ARG GRADLE_VERSION=7.4.2
+# Устанавливаем нужные пакеты для скачивания и распаковки Gradle
 RUN apt-get update && apt-get install -y wget unzip && \
-    wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -P /tmp && \
+    rm -rf /var/lib/apt/lists/*
+
+# Определяем переменную окружения для Gradle версии
+ENV GRADLE_VERSION=7.4.2
+
+# Скачиваем и распаковываем Gradle в /opt/gradle
+RUN wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -P /tmp && \
     unzip -d /opt/gradle /tmp/gradle-${GRADLE_VERSION}-bin.zip && \
     rm /tmp/gradle-${GRADLE_VERSION}-bin.zip
 
-# Объявляем путь Gradle как переменную окружения
+# Добавляем Gradle в PATH
 ENV GRADLE_HOME=/opt/gradle/gradle-${GRADLE_VERSION}
-ENV PATH=${GRADLE_HOME}/bin:${PATH}
+ENV PATH="${GRADLE_HOME}/bin:${PATH}"
 
-# Устанавливаем рабочую директорию
+# Копируем файлы проекта в контейнер
 WORKDIR /app
+COPY . .
 
-# Копируем все файлы проекта в контейнер
-COPY . /app
-
-# Делаем скрипт gradlew исполняемым
-RUN chmod +x gradlew
-
-# Запускаем сборку с помощью Gradle
-CMD ["./gradlew", "assembleDebug"]
+# Запускаем команду для сборки проекта с использованием Gradle
+RUN gradle wrapper --gradle-version ${GRADLE_VERSION} && \
+    ./gradlew build
