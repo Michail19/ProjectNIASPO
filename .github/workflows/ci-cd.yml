@@ -46,8 +46,9 @@ jobs:
 
       # Шаг для сборки приложения с использованием Gradle
       - name: Run Gradle Build
-        run: |
-          docker exec -t gradle-container /bin/bash -c "./gradlew assembleDebug"
+  	run: |
+    	   docker-compose -f docker/docker-compose.yml exec gradle-container /bin/bash -c "./gradlew assembleDebug"
+
 
       # Шаг для запуска тестов с Android эмулятором
       - name: Run Android Emulator Tests

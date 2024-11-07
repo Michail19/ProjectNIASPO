@@ -17,10 +17,11 @@ services:
   gradle:
     build:
       context: .
-      dockerfile: Dockerfile-gradle  # Dockerfile для контейнера с Gradle
+      dockerfile: Dockerfile-gradle
     volumes:
-      - ./app:/app  # Каталог с исходным кодом приложения
-    command: ./gradlew build  # Команда для запуска сборки с Gradle
+      - .:/app
+    working_dir: /app
+    command: ["./gradlew", "assembleDebug"]
 
   novnc:
     build:
