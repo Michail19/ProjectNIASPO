@@ -1,14 +1,25 @@
-# Используем официальный образ для Java с Gradle
-FROM gradle:7.6-jdk11 AS build
+# Используем официальный образ JDK 11 как базовый
+FROM openjdk:11-jdk-slim AS build
+
+# Устанавливаем Gradle 7.4.2 вручную
+ARG GRADLE_VERSION=7.4.2
+RUN apt-get update && apt-get install -y wget unzip && \
+    wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -P /tmp && \
+    unzip -d /opt/gradle /tmp/gradle-${GRADLE_VERSION}-bin.zip && \
+    rm /tmp/gradle-${GRADLE_VERSION}-bin.zip
+
+# Объявляем путь Gradle как переменную окружения
+ENV GRADLE_HOME=/opt/gradle/gradle-${GRADLE_VERSION}
+ENV PATH=${GRADLE_HOME}/bin:${PATH}
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем локальный код в контейнер
+# Копируем все файлы проекта в контейнер
 COPY . /app
 
-# Устанавливаем переменную окружения для SDK
-ENV ANDROID_SDK_ROOT=/sdk
+# Делаем скрипт gradlew исполняемым
+RUN chmod +x gradlew
 
-# Выполняем сборку с Gradle
+# Запускаем сборку с помощью Gradle
 CMD ["./gradlew", "assembleDebug"]
