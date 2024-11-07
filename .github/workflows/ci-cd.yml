@@ -17,29 +17,43 @@ jobs:
         options: --privileged
 
     steps:
-    - name: Check out repository
-      uses: actions/checkout@v2
+      # Шаг для клонирования репозитория
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Install Docker Compose
-      run: |
-        sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        sudo chmod +x /usr/local/bin/docker-compose
+      # Шаг для установки Docker Compose (если еще не установлен в контейнере)
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      # Шаг для установки Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-    - name: Start services with Docker Compose
-      run: |
-        docker-compose -f docker-compose.yml up -d
-        sleep 30
+      # Логин в Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Run Gradle Build
-      run: |
-        docker exec -t gradle-container /bin/bash -c "./gradlew assembleDebug"
+      # Запуск всех контейнеров с помощью Docker Compose
+      - name: Start services with Docker Compose
+        run: |
+          docker-compose -f docker/docker-compose.yml up -d
+          sleep 30
 
-    - name: Run Android Emulator Tests
-      run: |
-        docker exec -t emulator-container /bin/bash -c "./run-emulator-tests.sh"
+      # Шаг для сборки приложения с использованием Gradle
+      - name: Run Gradle Build
+        run: |
+          docker exec -t gradle-container /bin/bash -c "./gradlew assembleDebug"
 
-    - name: Stop Docker Compose services
-      run: docker-compose down
+      # Шаг для запуска тестов с Android эмулятором
+      - name: Run Android Emulator Tests
+        run: |
+          docker exec -t emulator-container /bin/bash -c "./run-emulator-tests.sh"
+
+      # Остановка всех сервисов после завершения
+      - name: Stop Docker Compose services
+        run: docker-compose -f docker/docker-compose.yml down
