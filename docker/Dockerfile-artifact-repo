@@ -1,5 +1,13 @@
 FROM ubuntu:20.04
 
+# Установка переменной окружения для предотвращения интерактивного режима
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Настройка временной зоны
+RUN apt update && apt install -y tzdata && \
+    ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime && \
+    dpkg-reconfigure --frontend noninteractive tzdata
+
 # Установка необходимых зависимостей для хранилища артефактов
 RUN apt update && apt install -y \
     nginx \
