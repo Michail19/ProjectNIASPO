@@ -1,0 +1,14 @@
+# Используем официальный образ для Java с Gradle
+FROM gradle:7.6-jdk11 AS build
+
+# Устанавливаем рабочую директорию
+WORKDIR /app
+
+# Копируем локальный код в контейнер
+COPY . /app
+
+# Устанавливаем переменную окружения для SDK
+ENV ANDROID_SDK_ROOT=/sdk
+
+# Выполняем сборку с Gradle
+CMD ["./gradlew", "assembleDebug"]

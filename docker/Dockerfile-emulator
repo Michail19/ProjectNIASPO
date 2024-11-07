@@ -1,0 +1,38 @@
+FROM ubuntu:20.04
+
+# Установка необходимых инструментов
+RUN apt update && apt install -y \
+    openjdk-11-jdk \
+    wget \
+    unzip \
+    lib32stdc++6 \
+    lib32z1 \
+    qemu-kvm \
+    x11vnc \
+    xvfb \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Установка Android SDK
+RUN wget https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip -O cmdline-tools.zip && \
+    mkdir -p /sdk/cmdline-tools && \
+    unzip cmdline-tools.zip -d /sdk/cmdline-tools && \
+    rm cmdline-tools.zip
+
+# Настройка пути к Android SDK
+ENV ANDROID_HOME=/sdk
+ENV PATH="${ANDROID_HOME}/cmdline-tools/cmdline-tools/bin:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/emulator:${PATH}"
+
+# Принимаем лицензионные соглашения и устанавливаем необходимые компоненты
+RUN yes | sdkmanager --licenses
+RUN sdkmanager "platform-tools" "emulator" "platforms;android-30" "system-images;android-30;google_apis;x86_64"
+
+# Создаем виртуальное устройство (AVD)
+RUN echo "no" | avdmanager create avd -n test_avd -k "system-images;android-30;google_apis;x86_64" --device "pixel"
+
+# Копируем скрипт для запуска эмулятора
+COPY run-emulator.sh /run-emulator.sh
+RUN chmod +x /run-emulator.sh
+
+# Команда для запуска эмулятора, Xvfb и x11vnc
+CMD ["/run-emulator.sh"]

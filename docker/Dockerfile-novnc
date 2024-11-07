@@ -1,0 +1,21 @@
+FROM ubuntu:20.04
+
+# Установка необходимых зависимостей для NoVNC и x11vnc
+RUN apt update && apt install -y \
+    git \
+    x11vnc \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Клонируем репозиторий NoVNC
+RUN git clone https://github.com/novnc/noVNC.git /noVNC
+
+# Устанавливаем зависимости Python для NoVNC
+RUN pip3 install -r /noVNC/requirements.txt
+
+# Копируем скрипт для запуска x11vnc и NoVNC
+COPY start-novnc.sh /start-novnc.sh
+RUN chmod +x /start-novnc.sh
+
+# Команда для запуска x11vnc и noVNC
+CMD ["/start-novnc.sh"]
