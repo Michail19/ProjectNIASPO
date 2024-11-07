@@ -17,10 +17,18 @@ RUN wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.
 ENV GRADLE_HOME=/opt/gradle/gradle-${GRADLE_VERSION}
 ENV PATH="${GRADLE_HOME}/bin:${PATH}"
 
-# Копируем файлы проекта в контейнер
+# Устанавливаем рабочую директорию и копируем файлы проекта
 WORKDIR /app
-COPY . .
+COPY . /app
 
-# Запускаем команду для сборки проекта с использованием Gradle
-RUN gradle wrapper --gradle-version ${GRADLE_VERSION} && \
-    ./gradlew build
+# Проверяем содержимое каталога для диагностики
+RUN ls -l /app
+
+# Если gradlew отсутствует, создаем его
+RUN gradle wrapper --gradle-version ${GRADLE_VERSION} || gradle init --type java-application
+
+# Убедитесь, что gradlew имеет разрешение на выполнение
+RUN chmod +x gradlew
+
+# Запускаем команду для сборки проекта
+RUN ./gradlew build
