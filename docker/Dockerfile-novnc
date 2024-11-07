@@ -1,3 +1,4 @@
+# Используем базовый образ с Ubuntu
 FROM ubuntu:20.04
 
 # Установка переменной окружения для предотвращения интерактивного режима
@@ -8,17 +9,13 @@ RUN apt update && apt install -y tzdata && \
     ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime && \
     dpkg-reconfigure --frontend noninteractive tzdata
 
-# Установка необходимых зависимостей для NoVNC и x11vnc
-RUN apt update && apt install -y \
-    git \
-    x11vnc \
-    python3-pip \
+# Устанавливаем зависимости
+RUN apt-get update && \
+    apt-get install -y \
+    novnc \
     websockify \
-    && rm -rf /var/lib/apt/lists/*
-
-# Клонируем репозиторий NoVNC
-RUN git clone https://github.com/novnc/noVNC.git /noVNC && \
-    chmod +x /noVNC/utils/novnc_proxy
+    x11vnc \
+    && apt-get clean
 
 # Устанавливаем зависимости Python для NoVNC
 # Установка Python и pip
@@ -27,9 +24,13 @@ RUN apt update && apt install -y python3 python3-pip
 # Установка numpy
 RUN pip3 install numpy
 
-# Копируем скрипт для запуска x11vnc и NoVNC
-COPY start-novnc.sh /start-novnc.sh
-RUN chmod +x /start-novnc.sh
+# Копируем свой скрипт запуска, если он есть
+COPY launch.sh /app/launch.sh
+RUN chmod +x /app/launch.sh
 
-# Команда для запуска x11vnc и noVNC
-CMD ["/start-novnc.sh"]
+# Открываем нужные порты
+EXPOSE 5900 6080
+
+# Запуск x11vnc и noVNC
+CMD x11vnc -display :0 -forever -shared -rfbport 5900 & \
+    /usr/share/novnc/utils/launch.sh --vnc localhost:5900 --listen 6080
