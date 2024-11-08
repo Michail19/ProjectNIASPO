@@ -4,38 +4,24 @@ FROM ubuntu:20.04
 # Установка переменной окружения для предотвращения интерактивного режима
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Настройка временной зоны
-RUN apt update && apt install -y tzdata && \
-    ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime && \
-    dpkg-reconfigure --frontend noninteractive tzdata
-
-# Устанавливаем зависимости
-RUN apt-get update && \
-    apt-get install -y \
-    novnc \
-    websockify \
-    x11vnc \
-    git && \
+# Установка зависимостей
+RUN apt update && apt install -y tzdata novnc websockify x11vnc git xvfb python3 python3-pip && \
     apt-get clean
 
-# Устанавливаем зависимости Python для NoVNC
-RUN apt update && apt install -y python3 python3-pip
-
-# Установка numpy
+# Установка Python зависимостей
 RUN pip3 install numpy
 
-# Клонируем конкретный релиз NoVNC для гарантированной структуры
+# Клонируем NoVNC
 RUN git clone --branch v1.2.0 https://github.com/novnc/noVNC.git /noVNC
 
-# Проверяем структуру каталога
-RUN ls -l /noVNC/utils
+# Копируем ваш собственный скрипт запуска в контейнер
+COPY ./docker/start-server.sh /start-server.sh
 
-# Устанавливаем разрешение на запуск для launch.sh
-RUN chmod +x /noVNC/utils/launch.sh
+# Даем права на выполнение вашему скрипту
+RUN chmod +x /start-server.sh
 
 # Открываем нужные порты
 EXPOSE 5900 6080
 
-# Запуск x11vnc и noVNC
-CMD x11vnc -display :0 -forever -shared -rfbport 5900 & \
-    /noVNC/utils/launch.sh --vnc localhost:5900 --listen 6080
+# Используем ваш скрипт как команду для запуска
+CMD /start-server.sh

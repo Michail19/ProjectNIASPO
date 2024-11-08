@@ -26,12 +26,12 @@ services:
       context: ..
       dockerfile: docker/Dockerfile-novnc
     ports:
-      - "5900:5900"
-      - "6080:6080"
+      - "5900:5900"  # Порт для VNC
+      - "6080:6080"  # Порт для noVNC
     environment:
-      - DISPLAY=:0
+      - DISPLAY=:99  # Убедитесь, что используется правильный дисплей
     depends_on:
-      - emulator
+      - emulator  # Зависимость от другого сервиса, например, эмулятора
 
 
   artifact-repo:
