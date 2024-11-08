@@ -4,12 +4,15 @@ FROM gradle:7.6-jdk11
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем файл gradlew в контейнер
+# Копируем все необходимые файлы для сборки и запуска lint
 COPY gradlew /app/gradlew
+COPY gradlew.bat /app/gradlew.bat
 COPY gradle /app/gradle
 COPY settings.gradle /app/settings.gradle
 COPY build.gradle /app/build.gradle
 COPY app /app/app
+COPY gradle.properties /app/gradle.properties
+COPY local.properties /app/local.properties
 
 # Устанавливаем права на выполнение для gradlew
 RUN chmod +x /app/gradlew

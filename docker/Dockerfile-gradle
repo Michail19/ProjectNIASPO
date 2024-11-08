@@ -1,8 +1,9 @@
 # Используем базовый образ с JDK
 FROM openjdk:11-jdk-slim
 
-# Устанавливаем нужные пакеты
-RUN apt-get update && apt-get install -y wget unzip novnc websockify
+# Устанавливаем необходимые пакеты
+RUN apt-get update && apt-get install -y wget unzip novnc websockify && \
+    rm -rf /var/lib/apt/lists/*
 
 # Скачиваем и распаковываем Gradle
 ENV GRADLE_VERSION=7.4.2
@@ -14,15 +15,15 @@ RUN wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.
 ENV GRADLE_HOME=/opt/gradle/gradle-${GRADLE_VERSION}
 ENV PATH="${GRADLE_HOME}/bin:${PATH}"
 
-# Копируем все файлы проекта
+# Устанавливаем рабочую директорию
 WORKDIR /app
+
+# Копируем проектные файлы
 COPY . /app
 
-# Если gradlew не найден, генерируем его
-RUN gradle wrapper --gradle-version ${GRADLE_VERSION} || gradle init --type java-application
-
-# Устанавливаем права на выполнение для gradlew
-RUN chmod +x /app/gradlew
+# Создаём gradlew, если его нет, и устанавливаем права на выполнение
+RUN if [ ! -f "./gradlew" ]; then gradle wrapper --gradle-version ${GRADLE_VERSION}; fi && \
+    chmod +x ./gradlew
 
 # Запускаем Gradle сборку
-CMD ./gradlew build
+CMD ["./gradlew", "build"]
