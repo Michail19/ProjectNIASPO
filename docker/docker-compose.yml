@@ -3,53 +3,55 @@ version: '3.8'
 services:
   emulator:
     build:
-      context: .
-      dockerfile: Dockerfile-emulator
+      context: ..
+      dockerfile: docker/Dockerfile-emulator
     environment:
       - DISPLAY=:0
     devices:
       - "/dev/kvm:/dev/kvm"  # Подключение KVM
     privileged: true          # Привилегированный режим для доступа к KVM
     volumes:
-      - ./app:/app
+      - ${PWD}/..:/app
     command: ./run-emulator.sh
 
   gradle:
     build:
-      context: .
-      dockerfile: Dockerfile-gradle
+      context: ..
+      dockerfile: docker/Dockerfile-gradle
     volumes:
-      - .:/app
+      - ${PWD}/..:/app
     working_dir: /app
     command: ["./gradlew", "assembleDebug"]
 
   novnc:
     build:
-      context: .
-      dockerfile: Dockerfile-novnc  # Dockerfile для контейнера с NoVNC
+      context: ..
+      dockerfile: docker/Dockerfile-novnc  # Dockerfile для контейнера с NoVNC
     ports:
       - "5900:5900"  # Порт для VNC
       - "6080:6080"  # Порт для noVNC
     environment:
       - DISPLAY=:0
     command: >
-      bash -c "x11vnc -display :0 -forever -shared -rfbport 5900 &
+      bash -c "
+      x11vnc -display :0 -forever -shared -rfbport 5900 &
       /noVNC/utils/launch.sh --vnc localhost:5900 --listen 6080"
     depends_on:
       - emulator
 
   artifact-repo:
     build:
-      context: .
-      dockerfile: Dockerfile-artifact-repo  # Используем Dockerfile для контейнера artifact-repo
+      context: ..
+      dockerfile: docker/Dockerfile-artifact-repo  # Используем Dockerfile для контейнера artifact-repo
     volumes:
-      - ./artifacts:/artifacts  # Подключение каталога для хранения артефактов
+      - ${PWD}/docker/artifacts:/artifacts  # Подключение каталога для хранения артефактов
     command: sleep infinity  # Поддержание контейнера запущенным для хранения артефактов
 
   linter:
     build:
-      context: .
-      dockerfile: Dockerfile-linter  # Используем Dockerfile для контейнера линтера
+      context: ..
+      dockerfile: docker/Dockerfile-linter  # Используем Dockerfile для контейнера линтера
     volumes:
-      - ./app:/app  # Каталог с исходным кодом приложения
+      - ${PWD}/..:/app  # Каталог с исходным кодом приложения
+    working_dir: /app
     command: ./gradlew lint  # Команда для запуска линтера

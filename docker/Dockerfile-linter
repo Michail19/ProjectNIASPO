@@ -4,8 +4,15 @@ FROM gradle:7.6-jdk11
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем локальный проект в контейнер
-COPY . /app
+# Копируем файл gradlew в контейнер
+COPY gradlew /app/gradlew
+COPY gradle /app/gradle
+COPY settings.gradle /app/settings.gradle
+COPY build.gradle /app/build.gradle
+COPY app /app/app
+
+# Устанавливаем права на выполнение для gradlew
+RUN chmod +x /app/gradlew
 
 # Выполняем линтинг с помощью Gradle
 CMD ["./gradlew", "lint"]

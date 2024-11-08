@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Запуск виртуального дисплея Xvfb
-Xvfb :0 -screen 0 1280x720x16 &  # Разрешение можно настроить по необходимости
-export DISPLAY=:0
+Xvfb :1 -screen 0 1024x768x16 &
+export DISPLAY=:1
 
 # Запуск VNC-сервера x11vnc
 x11vnc -display :0 -forever -shared -rfbport 5900 &
