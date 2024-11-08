@@ -15,14 +15,18 @@ RUN apt-get update && \
     novnc \
     websockify \
     x11vnc \
-    && apt-get clean
+    git && \
+    apt-get clean
 
 # Устанавливаем зависимости Python для NoVNC
-# Установка Python и pip
 RUN apt update && apt install -y python3 python3-pip
 
 # Установка numpy
 RUN pip3 install numpy
+
+# Клонирование NoVNC
+RUN git clone https://github.com/novnc/noVNC.git /opt/novnc
+RUN ln -s /opt/novnc/utils/launch.sh /usr/local/bin/novnc-launch.sh
 
 # Копируем свой скрипт запуска, если он есть
 COPY ./docker/launch.sh /app/launch.sh
@@ -33,4 +37,4 @@ EXPOSE 5900 6080
 
 # Запуск x11vnc и noVNC
 CMD x11vnc -display :0 -forever -shared -rfbport 5900 & \
-    /usr/share/novnc/utils/launch.sh --vnc localhost:5900 --listen 6080
+    /usr/local/bin/novnc-launch.sh --vnc localhost:5900 --listen 6080
