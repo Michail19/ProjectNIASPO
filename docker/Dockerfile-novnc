@@ -24,17 +24,18 @@ RUN apt update && apt install -y python3 python3-pip
 # Установка numpy
 RUN pip3 install numpy
 
-# Клонирование NoVNC
-RUN git clone https://github.com/novnc/noVNC.git /opt/novnc
-RUN ln -s /opt/novnc/utils/launch.sh /usr/local/bin/novnc-launch.sh
+# Клонируем конкретный релиз NoVNC для гарантированной структуры
+RUN git clone --branch v1.2.0 https://github.com/novnc/noVNC.git /noVNC
 
-# Копируем свой скрипт запуска, если он есть
-COPY ./docker/launch.sh /app/launch.sh
-RUN chmod +x /app/launch.sh
+# Проверяем структуру каталога
+RUN ls -l /noVNC/utils
+
+# Устанавливаем разрешение на запуск для launch.sh
+RUN chmod +x /noVNC/utils/launch.sh
 
 # Открываем нужные порты
 EXPOSE 5900 6080
 
 # Запуск x11vnc и noVNC
 CMD x11vnc -display :0 -forever -shared -rfbport 5900 & \
-    /usr/local/bin/novnc-launch.sh --vnc localhost:5900 --listen 6080
+    /noVNC/utils/launch.sh --vnc localhost:5900 --listen 6080

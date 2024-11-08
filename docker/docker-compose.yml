@@ -26,18 +26,15 @@ services:
   novnc:
     build:
       context: ..
-      dockerfile: docker/Dockerfile-novnc  # Dockerfile для контейнера с NoVNC
+      dockerfile: docker/Dockerfile-novnc
     ports:
-      - "5900:5900"  # Порт для VNC
-      - "6080:6080"  # Порт для noVNC
+      - "5900:5900"
+      - "6080:6080"
     environment:
       - DISPLAY=:0
-    command: >
-      bash -c "
-      x11vnc -display :0 -forever -shared -rfbport 5900 &
-      /noVNC/utils/launch.sh --vnc localhost:5900 --listen 6080"
     depends_on:
       - emulator
+
 
   artifact-repo:
     build:
