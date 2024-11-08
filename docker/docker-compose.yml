@@ -18,8 +18,6 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile-gradle
-    volumes:
-      - ${PWD}/..:/app
     working_dir: /app
     command: ["./gradlew", "assembleDebug"]
 
