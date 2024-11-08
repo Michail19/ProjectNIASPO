@@ -15,4 +15,4 @@ COPY app /app/app
 RUN chmod +x /app/gradlew
 
 # Выполняем линтинг с помощью Gradle
-CMD ["./gradlew", "lint"]
+CMD ["/app/gradlew", "lint"]
