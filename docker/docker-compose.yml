@@ -50,8 +50,6 @@ services:
   linter:
     build:
       context: ..
-      dockerfile: docker/Dockerfile-linter  # Используем Dockerfile для контейнера линтера
-    volumes:
-      - ${PWD}/..:/app
+      dockerfile: docker/Dockerfile-linter
     working_dir: /app
     command: ["./gradlew", "lint"]

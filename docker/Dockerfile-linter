@@ -18,4 +18,4 @@ COPY local.properties /app/local.properties
 RUN chmod +x /app/gradlew
 
 # Выполняем линтинг с помощью Gradle
-CMD ["/app/gradlew", "lint"]
+CMD ["./gradlew", "lint"]
