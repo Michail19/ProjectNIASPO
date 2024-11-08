@@ -1,22 +1,33 @@
 #!/bin/bash
 
 # Запуск виртуального дисплея Xvfb
-Xvfb :1 -screen 0 1024x768x16 &
-export DISPLAY=:1
+Xvfb :0 -screen 0 1080x1920x24 &
+export DISPLAY=:0
+
+if ! pgrep -x "Xvfb" > /dev/null; then
+    echo "Ошибка: Xvfb не запущен" >&2
+    exit 1
+fi
 
 # Запуск VNC-сервера x11vnc
 x11vnc -display :0 -forever -shared -rfbport 5900 &
 
-# Запуск Android эмулятора с KVM и GPU хоста
-$ANDROID_HOME/emulator/emulator -avd test_avd -no-window -no-audio -gpu host -accel on -qemu -enable-kvm &
+# Проверка наличия AVD
+if ! $ANDROID_HOME/emulator/emulator -list-avds | grep -q "test_avd"; then
+    echo "Ошибка: AVD 'test_avd' не существует" >&2
+    exit 1
+fi
 
-# Пауза, чтобы убедиться, что эмулятор запустился
+# Запуск Android эмулятора с логированием
+$ANDROID_HOME/emulator/emulator -avd test_avd -no-window -no-audio -gpu host -accel on -qemu -enable-kvm > emulator.log 2>&1 &
+
+# Пауза для запуска эмулятора
 adb wait-for-device
 
-# Вывод состояния эмулятора для отладки
+# Проверка подключения ADB
+adb kill-server
+adb start-server
 adb devices
 
-# Бесконечный цикл, чтобы контейнер оставался активным
-while true; do
-    sleep 1000
-done
+# Оставляем контейнер активным, пока эмулятор работает
+wait $!
