@@ -1,23 +1,28 @@
 #!/bin/bash
 
-# Запуск виртуального дисплея Xvfb
-Xvfb :0 -screen 0 1080x1920x24 &
-export DISPLAY=:0
-echo "Xvfb запущен на дисплее $DISPLAY"
+# Задаем порт ADB
+export ANDROID_ADB_SERVER_PORT=5037
 
-# Запуск VNC-сервера x11vnc
-x11vnc -display :0 -forever -shared -rfbport 5900 &
-echo "VNC-сервер запущен на дисплее $DISPLAY"
+# Запускаем ADB сервер на новом порту
+adb -P $ANDROID_ADB_SERVER_PORT start-server
 
-# Запуск Android эмулятора с логированием
-$ANDROID_HOME/emulator/emulator -avd test_avd -no-window -no-audio -gpu swiftshader_indirect -accel on -qemu -enable-kvm &
-echo "Эмулятор запущен"
+fluxbox &
 
-# Даем эмулятору время на загрузку
+export DISPLAY=:0 xlsclients
+xhost +local:root
+
+# Запуск виртуального дисплея Xvfb на :0
+Xvfb :0 -screen 0 1280x720x16 &
+
+# Запуск VNC-сервера для дисплея
+x11vnc -display :0 -forever -shared -rfbport 5900 -noxdamage -ncache 10 &
+
+# Запуск Android эмулятора
+$ANDROID_HOME/emulator/emulator -avd test_avd -port 5554 -no-window -no-audio -gpu host -accel on -qemu -enable-kvm &
+
+# Ожидание загрузки эмулятора
 sleep 30
+adb wait-for-device
 
-# Проверка состояния эмулятора
-adb wait-for-device && echo "Эмулятор доступен через adb" || echo "Эмулятор не доступен через adb"
-
-# Оставляем контейнер активным, пока эмулятор работает
+# Удерживаем контейнер активным
 wait $!
