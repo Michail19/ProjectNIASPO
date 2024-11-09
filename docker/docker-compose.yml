@@ -2,17 +2,35 @@ version: '3.8'
 
 services:
   emulator:
+    shm_size: '512m'
     build:
       context: ..
       dockerfile: docker/Dockerfile-emulator
     environment:
-      - DISPLAY=:1
+      - DISPLAY=:0
     devices:
       - "/dev/kvm:/dev/kvm"  # Подключение KVM
     privileged: true          # Привилегированный режим для доступа к KVM
     volumes:
       - ${PWD}/..:/app
+      - /tmp/.X11-unix:/tmp/.X11-unix  # Общий volume для X-сокета
     command: ./run-emulator.sh
+    networks:
+      - my-network  # Подключение к пользовательской сети
+
+  novnc:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile-novnc
+    ports:
+      - "6080:6080"  # Порт для noVNC
+    environment:
+      - DISPLAY=:0  # Убедитесь, что используется правильный дисплей
+    depends_on:
+      - emulator  # Зависимость от сервиса эмулятора
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix  # Общий volume для X-сокета
+    command: ./start-server.sh
     networks:
       - my-network  # Подключение к пользовательской сети
 
@@ -22,20 +40,6 @@ services:
       dockerfile: docker/Dockerfile-gradle
     working_dir: /app
     command: ["./gradlew", "assembleDebug"]
-    networks:
-      - my-network  # Подключение к пользовательской сети
-
-  novnc:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile-novnc
-    ports:
-      - "5900:5900"  # Порт для VNC
-      - "6080:6080"  # Порт для noVNC
-    environment:
-      - DISPLAY=:0  # Убедитесь, что используется правильный дисплей
-    depends_on:
-      - emulator  # Зависимость от другого сервиса, например, эмулятора
     networks:
       - my-network  # Подключение к пользовательской сети
 

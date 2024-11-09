@@ -12,7 +12,7 @@ COPY settings.gradle /app/settings.gradle
 COPY build.gradle /app/build.gradle
 COPY app /app/app
 COPY gradle.properties /app/gradle.properties
-COPY local.properties /app/local.properties
+# COPY local.properties /app/local.properties
 
 # Устанавливаем права на выполнение для gradlew
 RUN chmod +x /app/gradlew

@@ -19,7 +19,11 @@ RUN apt update && apt install -y \
     x11vnc \
     xvfb \
     git \
+    fluxbox \
     && rm -rf /var/lib/apt/lists/*
+
+RUN apt update && apt install -y \
+    mesa-utils libgl1-mesa-glx libgl1-mesa-dri
 
 # Установка Android SDK
 RUN wget https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip -O cmdline-tools.zip && \
