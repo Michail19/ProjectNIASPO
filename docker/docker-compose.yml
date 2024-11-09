@@ -13,6 +13,8 @@ services:
     volumes:
       - ${PWD}/..:/app
     command: ./run-emulator.sh
+    networks:
+      - my-network  # Подключение к пользовательской сети
 
   gradle:
     build:
@@ -20,6 +22,8 @@ services:
       dockerfile: docker/Dockerfile-gradle
     working_dir: /app
     command: ["./gradlew", "assembleDebug"]
+    networks:
+      - my-network  # Подключение к пользовательской сети
 
   novnc:
     build:
@@ -32,7 +36,8 @@ services:
       - DISPLAY=:1  # Убедитесь, что используется правильный дисплей
     depends_on:
       - emulator  # Зависимость от другого сервиса, например, эмулятора
-
+    networks:
+      - my-network  # Подключение к пользовательской сети
 
   artifact-repo:
     build:
@@ -41,6 +46,8 @@ services:
     volumes:
       - ${PWD}/docker/artifacts:/artifacts  # Подключение каталога для хранения артефактов
     command: sleep infinity  # Поддержание контейнера запущенным для хранения артефактов
+    networks:
+      - my-network  # Подключение к пользовательской сети
 
   linter:
     build:
@@ -48,3 +55,9 @@ services:
       dockerfile: docker/Dockerfile-linter
     working_dir: /app
     command: ["./gradlew", "lint"]
+    networks:
+      - my-network  # Подключение к пользовательской сети
+
+networks:
+  my-network:
+    driver: bridge  # Использование bridge-сети
