@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   emulator:
-    shm_size: '512m'
+    shm_size: '1g'
     build:
       context: ..
       dockerfile: docker/Dockerfile-emulator

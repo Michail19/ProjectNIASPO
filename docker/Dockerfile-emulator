@@ -23,7 +23,11 @@ RUN apt update && apt install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN apt update && apt install -y \
-    mesa-utils libgl1-mesa-glx libgl1-mesa-dri
+    libgl1-mesa-glx \
+    libgl1-mesa-dri \
+    libsdl1.2debian \
+    lib32gcc1 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Установка Android SDK
 RUN wget https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip -O cmdline-tools.zip && \
