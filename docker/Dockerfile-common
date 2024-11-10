@@ -1,0 +1,37 @@
+# Базовый образ с JDK и Gradle
+FROM openjdk:11-jdk-slim
+
+# Устанавливаем необходимые пакеты
+RUN apt-get update && apt-get install -y wget unzip && \
+    rm -rf /var/lib/apt/lists/*
+
+# Устанавливаем Gradle
+ENV GRADLE_VERSION=7.4.2
+RUN wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -P /tmp && \
+    unzip -d /opt/gradle /tmp/gradle-${GRADLE_VERSION}-bin.zip && \
+    rm /tmp/gradle-${GRADLE_VERSION}-bin.zip
+
+# Добавляем Gradle в PATH
+ENV GRADLE_HOME=/opt/gradle/gradle-${GRADLE_VERSION}
+ENV PATH="${GRADLE_HOME}/bin:${PATH}"
+
+# Скачиваем и устанавливаем Android SDK
+RUN wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O /sdk-tools.zip && \
+    mkdir -p /sdk && \
+    unzip /sdk-tools.zip -d /sdk && \
+    rm /sdk-tools.zip && \
+    yes | /sdk/cmdline-tools/bin/sdkmanager --sdk_root=/sdk "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+
+# Устанавливаем переменные окружения для Android SDK
+ENV ANDROID_HOME=/sdk
+ENV PATH="$PATH:/sdk/platform-tools:/sdk/cmdline-tools/bin"
+
+# Устанавливаем рабочую директорию
+WORKDIR /app
+
+# Копируем файлы проекта
+COPY . /app
+
+# Устанавливаем права на выполнение для gradlew
+RUN if [ ! -f "./gradlew" ]; then gradle wrapper --gradle-version ${GRADLE_VERSION}; fi && \
+    chmod +x ./gradlew

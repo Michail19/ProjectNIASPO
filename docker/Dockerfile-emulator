@@ -10,9 +10,12 @@ RUN apt update && apt install -y tzdata && \
 
 # Установка необходимых инструментов
 RUN apt update && apt install -y \
-    openjdk-11-jdk \
     wget \
     unzip \
+    openjdk-11-jdk \
+    libgl1-mesa-dev \
+    libqt5widgets5 \
+    adb \
     lib32stdc++6 \
     lib32z1 \
     qemu-kvm \
@@ -30,28 +33,30 @@ RUN apt update && apt install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Установка Android SDK
-RUN wget https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip -O cmdline-tools.zip && \
-    mkdir -p /sdk/cmdline-tools && \
-    unzip cmdline-tools.zip -d /sdk/cmdline-tools && \
-    rm cmdline-tools.zip
+ENV ANDROID_SDK_ROOT=/opt/android-sdk
+RUN mkdir -p $ANDROID_SDK_ROOT
 
-# Настройка пути к Android SDK
-ENV ANDROID_HOME=/sdk
-ENV PATH="${ANDROID_HOME}/cmdline-tools/cmdline-tools/bin:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/emulator:${PATH}"
+RUN wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O /cmdline-tools.zip && \
+    unzip /cmdline-tools.zip -d $ANDROID_SDK_ROOT && \
+    mv $ANDROID_SDK_ROOT/cmdline-tools $ANDROID_SDK_ROOT/tools && \
+    rm /cmdline-tools.zip
 
-# Принимаем лицензионные соглашения и устанавливаем необходимые компоненты
-RUN yes | sdkmanager --licenses
-RUN sdkmanager "platform-tools" "emulator" "platforms;android-30" "system-images;android-30;google_apis;x86_64"
+# Установка компонентов Android SDK
+RUN yes | $ANDROID_SDK_ROOT/tools/bin/sdkmanager --licenses
+RUN $ANDROID_SDK_ROOT/tools/bin/sdkmanager "platform-tools" "platforms;android-30" "system-images;android-30;google_apis;x86_64" "emulator"
 
-# Создаем виртуальное устройство (AVD)
-RUN echo "no" | avdmanager create avd -n test_avd -k "system-images;android-30;google_apis;x86_64" --device "pixel"
+# Создание виртуального устройства AVD
+RUN echo "no" | $ANDROID_SDK_ROOT/tools/bin/avdmanager create avd -n test_avd -k "system-images;android-30;google_apis;x86_64" --device "pixel_4"
 
-# Копируем скрипт для запуска эмулятора
-COPY ./docker/run-emulator.sh /run-emulator.sh
-RUN chmod +x /run-emulator.sh
+# Копирование скрипта для запуска эмулятора
+COPY ./docker/run-emulator.sh /usr/local/bin/run-emulator.sh
+RUN chmod +x /usr/local/bin/run-emulator.sh
 
 # Установка adb
 RUN apt update && apt install -y android-tools-adb
 
-# Команда для запуска эмулятора, Xvfb и x11vnc
-CMD ["/run-emulator.sh"]
+# Открытие необходимых портов
+EXPOSE 5554 5555 5900
+
+# Команда для запуска скрипта запуска эмулятора
+CMD ["run-emulator.sh"]

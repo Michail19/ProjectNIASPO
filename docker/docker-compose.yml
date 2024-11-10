@@ -37,7 +37,7 @@ services:
   gradle:
     build:
       context: ..
-      dockerfile: docker/Dockerfile-gradle
+      dockerfile: docker/Dockerfile-common
     working_dir: /app
     command: ["./gradlew", "assembleDebug"]
     networks:
@@ -56,7 +56,7 @@ services:
   linter:
     build:
       context: ..
-      dockerfile: docker/Dockerfile-linter
+      dockerfile: docker/Dockerfile-common
     working_dir: /app
     command: ["./gradlew", "lint"]
     networks:
