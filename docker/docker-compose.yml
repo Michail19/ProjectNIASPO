@@ -30,7 +30,7 @@ services:
       - emulator  # Зависимость от сервиса эмулятора
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix  # Общий volume для X-сокета
-    command: ./start-server.sh
+    command: /app/start-server.sh
     networks:
       - my-network  # Подключение к пользовательской сети
 

@@ -3,12 +3,12 @@ FROM ubuntu:20.04
 
 # Установка необходимых пакетов
 RUN apt-get update && \
-    apt-get install -y wget xvfb x11vnc novnc && \
+    apt-get install -y wget xvfb x11vnc novnc websockify net-tools && \
     apt-get clean
 
 # Копируем скрипт запуска noVNC
-COPY ./docker/start-server.sh ./start-server.sh
-RUN chmod +x ./start-server.sh
+COPY ./docker/start-server.sh /app/start-server.sh
+RUN chmod +x /app/start-server.sh
 
 # Запуск noVNC сервера через команду
-CMD ["./start-server.sh"]
+CMD ["/bin/bash", "-c", "/app/start-server.sh"]
