@@ -7,11 +7,8 @@ RUN apt-get update && \
     apt-get clean
 
 # Копируем скрипт запуска noVNC
-COPY ./docker/start-server.sh /app/start-server.sh
-RUN chmod +x /app/start-server.sh
-
-# Указываем рабочий каталог
-WORKDIR /app
+COPY ./docker/start-server.sh ./start-server.sh
+RUN chmod +x ./start-server.sh
 
 # Запуск noVNC сервера через команду
 CMD ["./start-server.sh"]
