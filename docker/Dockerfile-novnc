@@ -1,28 +1,18 @@
 # Используем базовый образ с Ubuntu
-FROM ubuntu:24.04
+FROM ubuntu:20.04
 
 # Установка переменной окружения для предотвращения интерактивного режима
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Установка зависимостей
-RUN apt update && apt install -y tzdata novnc websockify x11vnc git xvfb python3 python3-pip python3-venv && \
+RUN apt update && apt install -y tzdata novnc websockify x11vnc git xvfb python3 python3-pip && \
     apt-get clean
 
 RUN apt update && apt install -y \
-    libgl1-mesa-dev \
-    libqt5widgets5 \
-    lib32stdc++6 \
-    lib32z1 \
-    && rm -rf /var/lib/apt/lists/*
+    mesa-utils libgl1-mesa-glx libgl1-mesa-dri
 
-# Создаем виртуальную среду
-RUN python3 -m venv /opt/venv
-
-# Активируем виртуальную среду и устанавливаем numpy
-RUN /opt/venv/bin/pip install numpy
-
-# Добавляем виртуальную среду в PATH
-ENV PATH="/opt/venv/bin:$PATH"
+# Установка Python зависимостей
+RUN pip3 install numpy
 
 # Клонируем NoVNC
 RUN git clone --branch v1.2.0 https://github.com/novnc/noVNC.git /noVNC
