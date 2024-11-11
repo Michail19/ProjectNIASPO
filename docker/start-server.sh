@@ -1,4 +1,5 @@
 #!/bin/bash
+# start-server.sh
 
-# Запуск noVNC, соединенного с VNC-сервером, запущенным в контейнере emulator
-/noVNC/utils/launch.sh --vnc emulator:5900 --listen 6080
+# Запуск websockify для передачи X-сессии в web
+websockify -D --web /usr/share/novnc/ 6080 localhost:5900
