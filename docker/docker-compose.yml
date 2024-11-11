@@ -1,23 +1,6 @@
 version: '3.8'
 
 services:
-  emulator:
-    shm_size: '1g'
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile-emulator
-    environment:
-      - DISPLAY=:0
-    devices:
-      - "/dev/kvm:/dev/kvm"  # Подключение KVM
-    privileged: true          # Привилегированный режим для доступа к KVM
-    volumes:
-      - ${PWD}/..:/app
-      - /tmp/.X11-unix:/tmp/.X11-unix  # Общий volume для X-сокета
-    command: ./run-emulator.sh
-    networks:
-      - my-network  # Подключение к пользовательской сети
-
   novnc:
     build:
       context: ..
@@ -27,11 +10,30 @@ services:
     environment:
       - DISPLAY=:0  # Убедитесь, что используется правильный дисплей
     privileged: true
-    depends_on:
-      - emulator  # Зависимость от сервиса эмулятора
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix  # Общий volume для X-сокета
     command: /app/start-server.sh
+    networks:
+      - my-network  # Подключение к пользовательской сети
+
+  emulator:
+    shm_size: '1g'
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile-emulator
+    ports:
+      - "5037:5037"
+    environment:
+      - DISPLAY=:0
+    devices:
+      - "/dev/kvm:/dev/kvm"  # Подключение KVM
+    privileged: true          # Привилегированный режим для доступа к KVM
+    volumes:
+      - ${PWD}/..:/app
+      - /tmp/.X11-unix:/tmp/.X11-unix  # Общий volume для X-сокета
+    command: ./run-emulator.sh
+    depends_on:
+      - novnc  # Теперь эмулятор зависит от noVNC
     networks:
       - my-network  # Подключение к пользовательской сети
 
