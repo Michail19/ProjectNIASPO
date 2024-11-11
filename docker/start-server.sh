@@ -1,5 +1,7 @@
 #!/bin/bash
-# start-server.sh
 
-# Запуск websockify для передачи X-сессии в web
-websockify -D --web /usr/share/novnc/ 6080 localhost:5900
+# Запуск x11vnc для подключения к X-сессии
+x11vnc -display :0 -nopw -forever &
+
+# Запуск noVNC сервера
+novnc --vnc localhost:5900 --listen 6080

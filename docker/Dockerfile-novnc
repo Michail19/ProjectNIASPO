@@ -1,19 +1,17 @@
-# Dockerfile-novnc
-FROM ubuntu:24.04
+# Используем базовый образ Ubuntu
+FROM ubuntu:20.04
 
-# Установка зависимостей
-RUN apt-get update && apt-get install -y \
-    x11vnc \
-    websockify \
-    novnc \
-    && rm -rf /var/lib/apt/lists/*
+# Установка необходимых пакетов
+RUN apt-get update && \
+    apt-get install -y wget xvfb x11vnc novnc && \
+    apt-get clean
 
-# Копирование скрипта старта noVNC
-COPY ./start-server.sh /app/start-server.sh
+# Копируем скрипт запуска noVNC
+COPY ./docker/start-server.sh /app/start-server.sh
 RUN chmod +x /app/start-server.sh
 
-# Открытие порта для noVNC
-EXPOSE 6080
+# Указываем рабочий каталог
+WORKDIR /app
 
-# Команда для запуска noVNC
-CMD ["/app/start-server.sh"]
+# Запуск noVNC сервера через команду
+CMD ["./start-server.sh"]

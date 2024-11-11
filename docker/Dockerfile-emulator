@@ -1,37 +1,29 @@
-# Dockerfile-emulator
-FROM ubuntu:24.04
+# Используем базовый образ с Java и необходимыми утилитами
+FROM openjdk:11
 
-# Установка зависимостей
-RUN apt-get update && apt-get install -y \
-    openjdk-11-jdk \
-    wget \
-    unzip \
-    qemu-kvm \
-    libvirt-bin \
-    virtinst \
-    bridge-utils \
-    x11vnc \
-    xvfb \
-    git \
-    android-sdk \
-    && rm -rf /var/lib/apt/lists/*
+# Установка необходимых инструментов
+RUN apt-get update && \
+    apt-get install -y wget unzip lib32stdc++6 lib32z1 libglu1-mesa mesa-utils xvfb
 
 # Установка Android SDK
-RUN wget https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip -O /tmp/cmdline-tools.zip \
-    && mkdir -p /android/cmdline-tools \
-    && unzip /tmp/cmdline-tools.zip -d /android/cmdline-tools \
-    && rm /tmp/cmdline-tools.zip
+ENV ANDROID_SDK_ROOT=/opt/android-sdk
+RUN mkdir -p $ANDROID_SDK_ROOT/cmdline-tools && \
+    wget -q https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip -O /cmdline-tools.zip && \
+    unzip /cmdline-tools.zip -d /tmp/cmdline-tools && \
+    mv /tmp/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest && \
+    rm /cmdline-tools.zip && rm -rf /tmp/cmdline-tools && \
+    yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses && \
+    $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-30" "system-images;android-30;google_apis;x86_64" "emulator"
 
-ENV ANDROID_HOME /android
-ENV PATH ${PATH}:${ANDROID_HOME}/cmdline-tools/bin:${ANDROID_HOME}/platform-tools
+# Добавляем инструменты Android SDK в PATH
+ENV PATH="$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools"
 
-# Пример запуска эмулятора
-RUN sdkmanager --licenses
-RUN sdkmanager "platform-tools" "system-images;android-30;google_apis;x86_64" "emulator"
+# Создаем и настраиваем эмулятор
+RUN echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n test -k "system-images;android-30;google_apis;x86_64"
 
-# Копирование скрипта запуска эмулятора
-COPY ./run-emulator.sh /app/run-emulator.sh
+# Копируем скрипт запуска эмулятора в контейнер
+COPY ./docker/run-emulator.sh /app/run-emulator.sh
 RUN chmod +x /app/run-emulator.sh
 
-# Команда для запуска эмулятора
+# Запуск эмулятора через команду
 CMD ["/app/run-emulator.sh"]

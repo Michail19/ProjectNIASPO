@@ -1,11 +1,7 @@
 #!/bin/bash
-# run-emulator.sh
 
 # Запуск виртуального дисплея
-Xvfb :0 -screen 0 1280x720x24 &
+Xvfb :0 -screen 0 1280x800x16 &
 
-# Ожидание, чтобы Xvfb успел запуститься
-sleep 5
-
-# Запуск эмулятора
-emulator -avd Android_Emulator -no-skin -no-audio -no-window -gpu off -qemu -m 2048
+# Запуск эмулятора Android
+$ANDROID_SDK_ROOT/emulator/emulator -avd test -no-window -no-audio -gpu swiftshader_indirect -accel on -qemu -enable-kvm
