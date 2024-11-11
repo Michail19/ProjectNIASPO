@@ -1,4 +1,5 @@
-FROM ubuntu:20.04
+# Базовый образ Ubuntu
+FROM ubuntu:24.04
 
 # Установка переменной окружения для предотвращения интерактивного режима
 ENV DEBIAN_FRONTEND=noninteractive
@@ -8,7 +9,7 @@ RUN apt update && apt install -y tzdata && \
     ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime && \
     dpkg-reconfigure --frontend noninteractive tzdata
 
-# Установка необходимых инструментов
+# Установка необходимых инструментов и библиотек
 RUN apt update && apt install -y \
     wget \
     unzip \
@@ -23,40 +24,50 @@ RUN apt update && apt install -y \
     xvfb \
     git \
     fluxbox \
+    xorg \
+    openbox \
     && rm -rf /var/lib/apt/lists/*
 
-RUN apt update && apt install -y \
-    libgl1-mesa-glx \
-    libgl1-mesa-dri \
-    libsdl1.2debian \
-    lib32gcc1 \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt update && apt upgrade -y && apt install -y mesa-utils libgl1-mesa-dri libglvnd0
+
+RUN apt-get update && apt-get install -y x11-xkb-utils x11-common
 
 # Установка Android SDK
 ENV ANDROID_SDK_ROOT=/opt/android-sdk
-RUN mkdir -p $ANDROID_SDK_ROOT
+ENV ANDROID_HOME=/opt/android-sdk
+RUN mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
 
+# Загрузка и установка инструментов командной строки Android SDK
 RUN wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O /cmdline-tools.zip && \
-    unzip /cmdline-tools.zip -d $ANDROID_SDK_ROOT && \
-    mv $ANDROID_SDK_ROOT/cmdline-tools $ANDROID_SDK_ROOT/tools && \
+    unzip /cmdline-tools.zip -d $ANDROID_SDK_ROOT/cmdline-tools && \
+    mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest && \
     rm /cmdline-tools.zip
 
+# Убедиться, что sdkmanager существует и имеет права на выполнение
+RUN chmod +x $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager
+
 # Установка компонентов Android SDK
-RUN yes | $ANDROID_SDK_ROOT/tools/bin/sdkmanager --licenses
-RUN $ANDROID_SDK_ROOT/tools/bin/sdkmanager "platform-tools" "platforms;android-30" "system-images;android-30;google_apis;x86_64" "emulator"
+RUN yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses && \
+    $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-30" "system-images;android-30;google_apis;x86_64" "emulator"
 
 # Создание виртуального устройства AVD
-RUN echo "no" | $ANDROID_SDK_ROOT/tools/bin/avdmanager create avd -n test_avd -k "system-images;android-30;google_apis;x86_64" --device "pixel_4"
+RUN mkdir -p /root/.android/avd && \
+    echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n test_avd -k "system-images;android-30;google_apis;x86_64" --device "pixel_4"
 
-# Копирование скрипта для запуска эмулятора
-COPY ./docker/run-emulator.sh /usr/local/bin/run-emulator.sh
-RUN chmod +x /usr/local/bin/run-emulator.sh
+# Настройка конфигурации AVD
+RUN echo "hw.ramSize=2048" >> /root/.android/avd/test_avd.avd/config.ini && \
+    echo "hw.gpu.enabled=yes" >> /root/.android/avd/test_avd.avd/config.ini && \
+    echo "hw.gpu.mode=swiftshader" >> /root/.android/avd/test_avd.avd/config.ini
 
-# Установка adb
-RUN apt update && apt install -y android-tools-adb
+# Установка переменных среды и путей
+ENV PATH="$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH"
 
-# Открытие необходимых портов
+# Копирование скрипта запуска эмулятора
+COPY ./docker/run-emulator.sh ./run-emulator.sh
+RUN chmod +x ./run-emulator.sh
+
+# Открытие необходимых портов для эмулятора и noVNC
 EXPOSE 5554 5555 5900
 
-# Команда для запуска скрипта запуска эмулятора
-CMD ["run-emulator.sh"]
+# Команда по умолчанию для запуска скрипта
+CMD ["/bin/sh", "-c", "./run-emulator.sh"]
