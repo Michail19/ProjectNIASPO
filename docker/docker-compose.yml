@@ -26,6 +26,7 @@ services:
       - "6080:6080"  # Порт для noVNC
     environment:
       - DISPLAY=:0  # Убедитесь, что используется правильный дисплей
+    privileged: true
     depends_on:
       - emulator  # Зависимость от сервиса эмулятора
     volumes:

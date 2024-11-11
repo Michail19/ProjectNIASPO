@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Запуск x11vnc для подключения к X-сессии
-x11vnc -display :0 -nopw -forever &
+x11vnc -display :0 -noshm -nopw -forever &
 
 # Запуск noVNC через скрипт launch.sh, если он доступен
 if [ -f /usr/share/novnc/utils/launch.sh ]; then
