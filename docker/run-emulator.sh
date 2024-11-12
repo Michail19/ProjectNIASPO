@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Задание DISPLAY для эмулятора
+export DISPLAY=:0
+
 # Запуск adb-сервера
 adb start-server
 

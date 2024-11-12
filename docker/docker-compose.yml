@@ -6,7 +6,8 @@ services:
       context: ..
       dockerfile: docker/Dockerfile-novnc
     ports:
-      - "6080:6080"  # Порт для noVNC
+      - "5900:5900"   # Порт для VNC
+      - "6080:6080"   # Порт для noVNC
     environment:
       - DISPLAY=:0  # Убедитесь, что используется правильный дисплей
     privileged: true

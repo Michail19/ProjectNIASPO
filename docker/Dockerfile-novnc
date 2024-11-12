@@ -3,12 +3,15 @@ FROM ubuntu:20.04
 
 # Установка необходимых пакетов
 RUN apt-get update && \
-    apt-get install -y wget xvfb x11vnc novnc websockify net-tools fluxbox && \
+    apt-get install -y wget xvfb x11vnc novnc websockify net-tools fluxbox x11-utils iputils-ping && \
     apt-get clean
 
 # Копируем скрипт запуска noVNC
 COPY ./docker/start-server.sh /app/start-server.sh
 RUN chmod +x /app/start-server.sh
+
+# Открываем порты для VNC и noVNC
+EXPOSE 5900 6080
 
 # Запуск noVNC сервера через команду
 CMD ["/bin/bash", "-c", "/app/start-server.sh"]
