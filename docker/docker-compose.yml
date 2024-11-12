@@ -8,7 +8,7 @@ services:
     environment:
       - DISPLAY=:1
     volumes:
-      - x11-socket:/tmp/.X11-unix  # Общий volume для X-сокета
+      - /tmp/.X11-unix:/tmp/.X11-unix
     networks:
       - my-network
 
@@ -23,7 +23,7 @@ services:
       - DISPLAY=:1
     privileged: true
     volumes:
-      - x11-socket:/tmp/.X11-unix  # Общий volume для X-сокета
+      - /tmp/.X11-unix:/tmp/.X11-unix
     depends_on:
       xvfb:
         condition: service_healthy  # Убедитесь, что виртуальный дисплей запущен
@@ -45,7 +45,7 @@ services:
     privileged: true
     volumes:
       - ${PWD}/..:/app
-      - x11-socket:/tmp/.X11-unix  # Общий volume для X-сокета
+      - /tmp/.X11-unix:/tmp/.X11-unix
     depends_on:
       xvfb:
         condition: service_healthy

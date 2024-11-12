@@ -3,7 +3,7 @@ FROM ubuntu:20.04
 
 # Обновляем пакеты и устанавливаем xvfb
 RUN apt-get update && \
-    apt-get install -y xvfb && \
+    apt-get install -y xvfb x11-apps && \
     rm -rf /var/lib/apt/lists/*
 
 # Устанавливаем переменную окружения для дисплея

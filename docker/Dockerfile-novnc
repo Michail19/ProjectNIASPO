@@ -3,7 +3,7 @@ FROM ubuntu:20.04
 
 # Установка необходимых пакетов
 RUN apt-get update && \
-    apt-get install -y wget x11vnc novnc websockify net-tools fluxbox x11-utils iputils-ping && \
+    apt-get install -y wget xvfb x11vnc novnc websockify net-tools fluxbox x11-utils iputils-ping && \
     apt-get clean
 
 # Копируем скрипт запуска noVNC
