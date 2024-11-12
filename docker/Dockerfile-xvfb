@@ -1,0 +1,16 @@
+# Используем базовый образ Ubuntu 20.04
+FROM ubuntu:20.04
+
+# Обновляем пакеты и устанавливаем xvfb
+RUN apt-get update && \
+    apt-get install -y xvfb && \
+    rm -rf /var/lib/apt/lists/*
+
+# Устанавливаем переменную окружения для дисплея
+ENV DISPLAY=:1
+
+# Добавляем команду для проверки, что Xvfb запущен
+HEALTHCHECK --interval=5s --retries=5 CMD pidof Xvfb || exit 1
+
+# Запуск Xvfb
+CMD ["Xvfb", ":1", "-screen", "0", "1280x1024x24"]

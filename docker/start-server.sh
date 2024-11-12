@@ -1,15 +1,11 @@
 #!/bin/bash
 
-# Запуск виртуального дисплея на дисплее :0
-Xvfb :0 -screen 0 1280x800x16 &
-sleep 2  # Даем немного времени для запуска Xvfb
-
 # Запуск оконного менеджера (Fluxbox)
 fluxbox &
 sleep 2  # Небольшая задержка для запуска fluxbox
 
 # Запуск x11vnc для подключения к X-сессии
-x11vnc -display :0 -noshm -nopw -forever -rfbport 5900 &
+x11vnc -display :1 -noshm -nopw -forever -rfbport 5900 &
 sleep 2  # Даем время для запуска x11vnc
 
 # Проверка наличия launch.sh и запуск noVNC

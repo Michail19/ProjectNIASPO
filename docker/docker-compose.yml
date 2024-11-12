@@ -1,6 +1,17 @@
 version: '3.8'
 
 services:
+  xvfb:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile-xvfb
+    environment:
+      - DISPLAY=:1
+    volumes:
+      - x11-socket:/tmp/.X11-unix  # Общий volume для X-сокета
+    networks:
+      - my-network
+
   novnc:
     build:
       context: ..
@@ -9,13 +20,16 @@ services:
       - "5900:5900"   # Порт для VNC
       - "6080:6080"   # Порт для noVNC
     environment:
-      - DISPLAY=:0  # Убедитесь, что используется правильный дисплей
+      - DISPLAY=:1
     privileged: true
     volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix  # Общий volume для X-сокета
+      - x11-socket:/tmp/.X11-unix  # Общий volume для X-сокета
+    depends_on:
+      xvfb:
+        condition: service_healthy  # Убедитесь, что виртуальный дисплей запущен
     command: /app/start-server.sh
     networks:
-      - my-network  # Подключение к пользовательской сети
+      - my-network
 
   emulator:
     shm_size: '1g'
@@ -25,18 +39,19 @@ services:
     ports:
       - "5037:5037"
     environment:
-      - DISPLAY=:0
+      - DISPLAY=:1
     devices:
-      - "/dev/kvm:/dev/kvm"  # Подключение KVM
-    privileged: true          # Привилегированный режим для доступа к KVM
+      - "/dev/kvm:/dev/kvm"
+    privileged: true
     volumes:
       - ${PWD}/..:/app
-      - /tmp/.X11-unix:/tmp/.X11-unix  # Общий volume для X-сокета
-    command: ./run-emulator.sh
+      - x11-socket:/tmp/.X11-unix  # Общий volume для X-сокета
     depends_on:
-      - novnc  # Теперь эмулятор зависит от noVNC
+      xvfb:
+        condition: service_healthy
+    command: ./run-emulator.sh
     networks:
-      - my-network  # Подключение к пользовательской сети
+      - my-network
 
   gradle:
     build:
@@ -45,17 +60,17 @@ services:
     working_dir: /app
     command: ["./gradlew", "assembleDebug"]
     networks:
-      - my-network  # Подключение к пользовательской сети
+      - my-network
 
   artifact-repo:
     build:
       context: ..
-      dockerfile: docker/Dockerfile-artifact-repo  # Используем Dockerfile для контейнера artifact-repo
+      dockerfile: docker/Dockerfile-artifact-repo
     volumes:
-      - ${PWD}/docker/artifacts:/artifacts  # Подключение каталога для хранения артефактов
-    command: sleep infinity  # Поддержание контейнера запущенным для хранения артефактов
+      - ${PWD}/docker/artifacts:/artifacts
+    command: sleep infinity
     networks:
-      - my-network  # Подключение к пользовательской сети
+      - my-network
 
   linter:
     build:
@@ -64,8 +79,9 @@ services:
     working_dir: /app
     command: ["./gradlew", "lint"]
     networks:
-      - my-network  # Подключение к пользовательской сети
+      - my-network
 
 networks:
   my-network:
-    driver: bridge  # Использование bridge-сети
+    driver: bridge
+

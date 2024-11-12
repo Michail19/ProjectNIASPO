@@ -3,7 +3,7 @@ FROM openjdk:11
 
 # Установка необходимых инструментов
 RUN apt-get update && \
-    apt-get install -y wget unzip lib32stdc++6 lib32z1 libglu1-mesa mesa-utils xvfb
+    apt-get install -y wget unzip lib32stdc++6 lib32z1 libglu1-mesa mesa-utils
 
 # Установка Android SDK
 ENV ANDROID_SDK_ROOT=/opt/android-sdk
@@ -24,6 +24,8 @@ RUN echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd
 # Копируем скрипт запуска эмулятора в контейнер
 COPY ./docker/run-emulator.sh ./run-emulator.sh
 RUN chmod +x ./run-emulator.sh
+
+ENV DISPLAY=:1
 
 # Запуск эмулятора через команду
 CMD ["./run-emulator.sh"]
