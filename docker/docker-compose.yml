@@ -27,8 +27,7 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
     depends_on:
-      xvfb:
-        condition: service_healthy  # Убедитесь, что виртуальный дисплей запущен
+      - emulator
     command: /app/start-server.sh
     networks:
       - my-network

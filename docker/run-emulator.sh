@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Ensure the correct permissions on /tmp/.X11-unix
+sudo chown root:root /tmp/.X11-unix
+
 # Запуск adb-сервера
 adb start-server
 
