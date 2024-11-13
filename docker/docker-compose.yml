@@ -39,6 +39,8 @@ services:
       dockerfile: docker/Dockerfile-emulator
     ports:
       - "5037:5037"
+      - "5554:5554"
+      - "5555:5555"
     environment:
       - DISPLAY=:0
       - ADB_SERVER_PORT=5038
@@ -54,6 +56,14 @@ services:
     command: ./run-emulator.sh
     networks:
       - my-network
+    deploy:
+      resources:
+        limits:
+          memory: 4g        # Максимальный объем памяти для контейнера
+          cpus: "2.0"       # Ограничение на использование 2 CPU-ядра
+        reservations:
+          memory: 2g        # Резервируемый объем памяти для контейнера
+          cpus: "1.0"       # Резервируемое количество процессоров для контейнера
 
   gradle:
     build:
