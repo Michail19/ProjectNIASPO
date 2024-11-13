@@ -12,7 +12,7 @@ RUN chmod +x /app/start-server.sh
 
 # Открываем порты для VNC и noVNC
 EXPOSE 5900 6080
-ENV DISPLAY=:1
+ENV DISPLAY=:0
 
 # Запуск noVNC сервера через команду
 CMD ["/bin/bash", "-c", "/app/start-server.sh"]

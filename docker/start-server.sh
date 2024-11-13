@@ -5,7 +5,7 @@ fluxbox &
 sleep 2  # Небольшая задержка для запуска fluxbox
 
 # Запуск x11vnc для подключения к X-сессии
-x11vnc -display :1 -noshm -nopw -forever &
+x11vnc -display :0 -noshm -nopw -forever &
 sleep 2  # Даем время для запуска x11vnc
 
 # Проверка наличия launch.sh и запуск noVNC

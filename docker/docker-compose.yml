@@ -6,7 +6,7 @@ services:
       context: ..
       dockerfile: docker/Dockerfile-xvfb
     environment:
-      - DISPLAY=:1
+      - DISPLAY=:0
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
     networks:
@@ -20,8 +20,10 @@ services:
       - "5900:5900"   # Порт для VNC
       - "6080:6080"   # Порт для noVNC
     environment:
-      - DISPLAY=:1
+      - DISPLAY=:0
     privileged: true
+    cap_add:
+      - SYS_ADMIN  # Добавляем необходимые права для работы с виртуализацией
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
     depends_on:
@@ -39,7 +41,8 @@ services:
     ports:
       - "5037:5037"
     environment:
-      - DISPLAY=:1
+      - DISPLAY=:0
+      - ADB_SERVER_PORT=5038
     devices:
       - "/dev/kvm:/dev/kvm"
     privileged: true
