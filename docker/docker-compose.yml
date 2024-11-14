@@ -9,29 +9,18 @@ services:
       - DISPLAY=:0
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
+      - /dev/null:/dev/null
     networks:
       - my-network
-
-  novnc:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile-novnc
-    ports:
-      - "5900:5900"   # Порт для VNC
-      - "6080:6080"   # Порт для noVNC
-    environment:
-      - DISPLAY=:0
-    privileged: true
-    cap_add:
-      - SYS_ADMIN  # Добавляем необходимые права для работы с виртуализацией
-    volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix
-    depends_on:
-      xvfb:
-        condition: service_healthy
-    command: /app/start-server.sh
-    networks:
-      - my-network
+    tty: true                # Оставить TTY для интерактивного режима
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'          # Увеличьте количество доступных CPU, если нужно
+          memory: 2G           # Увеличьте объем памяти, если доступно
+        reservations:
+          cpus: '1.0'
+          memory: 1G
 
   emulator:
     shm_size: '1g'
@@ -47,12 +36,16 @@ services:
       - ADB_SERVER_PORT=5038
     devices:
       - "/dev/kvm:/dev/kvm"   # Монтирование устройства KVM
+      - "/dev/fb0:/dev/fb0"   # Монтирование устройства framebuffer
+      - "/dev/tty0:/dev/tty0" # Монтирование устройства tty0
+      - "/dev/tty1:/dev/tty1" # Монтирование устройства tty1
     privileged: true
     cap_add:
       - SYS_ADMIN   # Даем дополнительные права
     volumes:
       - ${PWD}/..:/app
       - /tmp/.X11-unix:/tmp/.X11-unix
+      - /dev/null:/dev/null
     depends_on:
       xvfb:
         condition: service_healthy
@@ -67,6 +60,28 @@ services:
         reservations:
           memory: 2g        # Резервируемый объем памяти для контейнера
           cpus: "1.0"       # Резервируемое количество процессоров для контейнера
+
+  novnc:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile-novnc
+    ports:
+      - "5900:5900"   # Порт для VNC
+      - "6080:6080"   # Порт для noVNC
+    environment:
+      - DISPLAY=:0
+    privileged: true
+    cap_add:
+      - SYS_ADMIN  # Добавляем необходимые права для работы с виртуализацией
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /dev/null:/dev/null
+    depends_on:
+      xvfb:
+        condition: service_healthy
+    command: /app/start-server.sh
+    networks:
+      - my-network
 
   gradle:
     build:
@@ -99,4 +114,3 @@ services:
 networks:
   my-network:
     driver: bridge
-

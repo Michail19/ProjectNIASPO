@@ -27,4 +27,6 @@ RUN chmod +x ./run-emulator.sh
 
 ENV DISPLAY=:0
 # Запуск эмулятора через команду
-CMD ["./run-emulator.sh"]
+# CMD ["./run-emulator.sh"]
+
+CMD ./run-emulator.sh

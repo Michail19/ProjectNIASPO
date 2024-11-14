@@ -1,18 +1,30 @@
 #!/bin/bash
 
-# Ensure the correct permissions on /tmp/.X11-unix
+export DISPLAY=:0
+
+# Ensure correct permissions on /tmp/.X11-unix
 chmod -R 1777 /tmp/.X11-unix
 chown root:root /tmp/.X11-unix
 
-# Запуск adb-сервера
+# Wait for Xvfb to start
+for i in {1..10}; do
+    if xset -display :0 q &>/dev/null; then
+        echo "Xvfb is ready."
+        break
+    fi
+    echo "Waiting for Xvfb to start..."
+    sleep 2
+done
+
+# Start ADB server
 adb start-server
 
-# Запуск эмулятора Android
-$ANDROID_SDK_ROOT/emulator/emulator -avd test -no-window -no-audio -port 5554 -gpu host -accel on -qemu -enable-kvm
+# Start Android emulator
+$ANDROID_SDK_ROOT/emulator/emulator -avd test -no-window -no-audio -port 5554 -gpu swiftshader_indirect -accel on -qemu -enable-kvm
 
-# Ждем некоторое время для старта эмулятора
+# Allow time for emulator startup
 sleep 30
 
-# Переключаем ADB на TCP и подключаемся
+# Switch ADB to TCP mode and connect
 adb -s emulator-5554 tcpip 5555
 adb connect localhost:5555
