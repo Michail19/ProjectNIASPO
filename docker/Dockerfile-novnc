@@ -6,6 +6,11 @@ RUN apt-get update && \
     apt-get install -y wget xvfb x11vnc novnc websockify net-tools fluxbox x11-utils iputils-ping adb && \
     apt-get clean
 
+RUN wget https://github.com/novnc/noVNC/archive/refs/tags/v1.2.0.tar.gz && \
+    tar -xzf v1.2.0.tar.gz && \
+    mv noVNC-1.2.0 /usr/share/novnc && \
+    rm v1.2.0.tar.gz
+
 # Копируем скрипт запуска noVNC
 COPY ./docker/start-server.sh /app/start-server.sh
 RUN chmod +x /app/start-server.sh
