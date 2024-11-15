@@ -26,7 +26,7 @@ done
 adb start-server
 
 # Запускаем эмулятор Android
-$ANDROID_SDK_ROOT/emulator/emulator -avd test -no-window -no-audio -port 5554 -gpu swiftshader_indirect -accel on -qemu -enable-kvm &
+$ANDROID_SDK_ROOT/emulator/emulator -avd test -no-audio -port 5554 -gpu host -accel on -qemu -enable-kvm &
 
 # Ждем завершения загрузки эмулятора
 boot_completed=""
