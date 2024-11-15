@@ -13,6 +13,9 @@ RUN apt-get update && \
         mesa-utils \
         x11-utils \
         libx11-6 \
+        libpulse0 \
+        pulseaudio \
+        libnss3 \
         && rm -rf /var/lib/apt/lists/*
 
 # Установка Android SDK
@@ -34,10 +37,6 @@ RUN echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd
 # Копируем скрипт запуска эмулятора в контейнер
 COPY ./docker/run-emulator.sh ./run-emulator.sh
 RUN chmod +x ./run-emulator.sh
-
-RUN apt-get update && \
-    apt-get install -y libpulse0 pulseaudio libnss3 && \
-    apt-get clean
 
 ENV DISPLAY=:99
 # Запуск эмулятора через команду

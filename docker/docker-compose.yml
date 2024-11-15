@@ -47,6 +47,7 @@ services:
     volumes:
       - ${PWD}/..:/app
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - shared-volume:/shared
     depends_on:
       xvfb:
         condition: service_healthy
@@ -83,14 +84,30 @@ services:
     networks:
       - my-network
 
+  linter:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile-common
+    working_dir: /app
+    command: ["ktlint"]
+    networks:
+      - my-network
+
   gradle:
     build:
       context: ..
       dockerfile: docker/Dockerfile-common
     working_dir: /app
-    command: ["./gradlew", "assembleDebug"]
     networks:
       - my-network
+    volumes:
+      - shared-volume:/shared
+    environment:
+      - ADB_SERVER_PORT=5037
+    depends_on:
+      emulator:
+        condition: service_healthy
+    command: bash -c "adb connect emulator:5555 && ./gradlew installDebug"
 
   artifact-repo:
     build:
@@ -102,14 +119,8 @@ services:
     networks:
       - my-network
 
-  linter:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile-common
-    working_dir: /app
-    command: ["./gradlew", "lint"]
-    networks:
-      - my-network
+volumes:
+  shared-volume:
 
 networks:
   my-network:

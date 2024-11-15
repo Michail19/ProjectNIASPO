@@ -3,6 +3,7 @@
 export DISPLAY=:99
 export XDG_RUNTIME_DIR=/tmp
 export LIBGL_ALWAYS_SOFTWARE=1
+export ADB_SERVER_PORT=5038
 
 # Создаем директорию .android, если она не существует
 mkdir -p /root/.android

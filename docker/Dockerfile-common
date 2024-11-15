@@ -1,37 +1,53 @@
-# Базовый образ с JDK и Gradle
+# Используем базовый образ с поддержкой JDK и Android SDK
 FROM openjdk:11-jdk-slim
 
-# Устанавливаем необходимые пакеты
-RUN apt-get update && apt-get install -y wget unzip && \
-    rm -rf /var/lib/apt/lists/*
+# Установка зависимостей и утилит
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    unzip \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
-# Устанавливаем Gradle
-ENV GRADLE_VERSION=7.4.2
-RUN wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -P /tmp && \
-    unzip -d /opt/gradle /tmp/gradle-${GRADLE_VERSION}-bin.zip && \
-    rm /tmp/gradle-${GRADLE_VERSION}-bin.zip
+# Установка Gradle
+ENV GRADLE_VERSION=7.5
+RUN curl -sL https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -o gradle.zip \
+    && mkdir /opt/gradle \
+    && unzip gradle.zip -d /opt/gradle \
+    && rm gradle.zip
+ENV PATH="/opt/gradle/gradle-${GRADLE_VERSION}/bin:${PATH}"
 
-# Добавляем Gradle в PATH
-ENV GRADLE_HOME=/opt/gradle/gradle-${GRADLE_VERSION}
-ENV PATH="${GRADLE_HOME}/bin:${PATH}"
+# Установка Android Command Line Tools
+ENV ANDROID_HOME=/opt/android-sdk
+ENV PATH="${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools:${PATH}"
+RUN mkdir -p ${ANDROID_HOME}/cmdline-tools \
+    && curl -sL https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -o cmdline-tools.zip \
+    && unzip cmdline-tools.zip -d ${ANDROID_HOME}/cmdline-tools \
+    && rm cmdline-tools.zip \
+    && mv ${ANDROID_HOME}/cmdline-tools/cmdline-tools ${ANDROID_HOME}/cmdline-tools/latest
 
-# Скачиваем и устанавливаем Android SDK
-RUN wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O /sdk-tools.zip && \
-    mkdir -p /sdk && \
-    unzip /sdk-tools.zip -d /sdk && \
-    rm /sdk-tools.zip && \
-    yes | /sdk/cmdline-tools/bin/sdkmanager --sdk_root=/sdk "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+# Установка Android SDK и инструментов
+RUN yes | sdkmanager --licenses \
+    && sdkmanager --install "platform-tools" \
+    && sdkmanager --install "build-tools;30.0.3" \
+    && sdkmanager --install "platforms;android-30"
 
-# Устанавливаем переменные окружения для Android SDK
-ENV ANDROID_HOME=/sdk
-ENV PATH="$PATH:/sdk/platform-tools:/sdk/cmdline-tools/bin"
+# Установка линтеров (например, ktlint)
+RUN curl -sSLO https://github.com/pinterest/ktlint/releases/download/0.49.0/ktlint \
+    && chmod +x ktlint \
+    && mv ktlint /usr/local/bin/
 
-# Устанавливаем рабочую директорию
+# Копирование проекта в контейнер
 WORKDIR /app
+COPY . .
 
-# Копируем файлы проекта
-COPY . /app
+# Обновление Gradle wrapper
+RUN ./gradlew wrapper --gradle-version ${GRADLE_VERSION}
 
-# Устанавливаем права на выполнение для gradlew
-RUN if [ ! -f "./gradlew" ]; then gradle wrapper --gradle-version ${GRADLE_VERSION}; fi && \
-    chmod +x ./gradlew
+# Установка прав на Gradle wrapper
+RUN chmod +x ./gradlew
+
+# Установка зависимостей проекта
+RUN ./gradlew dependencies
+
+# Команда по умолчанию
+CMD ["./gradlew", "tasks"]
