@@ -3,7 +3,17 @@ FROM openjdk:11
 
 # Установка необходимых инструментов
 RUN apt-get update && \
-    apt-get install -y wget xvfb unzip lib32stdc++6 lib32z1 libglu1-mesa mesa-utils x11-utils x11-xserver-utils
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        wget \
+        xvfb \
+        unzip \
+        lib32stdc++6 \
+        lib32z1 \
+        libglu1-mesa \
+        mesa-utils \
+        x11-utils \
+        libx11-6 \
+        && rm -rf /var/lib/apt/lists/*
 
 # Установка Android SDK
 ENV ANDROID_SDK_ROOT=/opt/android-sdk

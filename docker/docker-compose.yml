@@ -16,9 +16,9 @@ services:
       - my-network
     tty: true
     healthcheck:
-      test: ["CMD", "pidof", "Xvfb"]
+      test: ["CMD", "ls", "/tmp/.X11-unix/X99"]
       interval: 5s
-      retries: 3
+      retries: 5
       start_period: 10s
       timeout: 2s
     mem_limit: 2g
@@ -56,11 +56,11 @@ services:
     mem_limit: 4g
     cpus: "2.0"
     healthcheck:
-      test: ["CMD", "ls", "/tmp/.X11-unix/X0"]
-      interval: 5s
-      retries: 5
-      start_period: 10s
-      timeout: 2s
+      test: ["CMD", "adb", "shell", "getprop", "sys.boot_completed"]
+      interval: 10s
+      retries: 10
+      start_period: 60s
+      timeout: 5s
 
   novnc:
     build:

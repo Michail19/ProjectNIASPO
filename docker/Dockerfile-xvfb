@@ -23,7 +23,7 @@ RUN apt-get update && \
 ENV DISPLAY=:99
 
 # Добавляем команду для проверки, что Xvfb запущен
-HEALTHCHECK --interval=5s --retries=5 CMD pidof Xvfb || exit 1
+# HEALTHCHECK --interval=5s --retries=5 CMD pidof Xvfb || exit 1
 
 # Запуск Xvfb
 RUN rm -rf /tmp/.X11-unix && mkdir -p /tmp/.X11-unix

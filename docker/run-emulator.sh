@@ -1,14 +1,20 @@
 #!/bin/bash
 
 export DISPLAY=:99
+export XDG_RUNTIME_DIR=/tmp
+export LIBGL_ALWAYS_SOFTWARE=1
 
-# Ensure correct permissions on /tmp/.X11-unix
+# Создаем директорию .android, если она не существует
+mkdir -p /root/.android
+chmod -R 755 /root/.android
+
+# Обеспечиваем правильные права на /tmp/.X11-unix
 chmod -R 1777 /tmp/.X11-unix
 chown root:root /tmp/.X11-unix
 
-# Wait for Xvfb to start
+# Ждем запуска Xvfb
 for i in {1..10}; do
-    if xset -display :99 q &>/dev/null; then
+    if xdpyinfo -display :99 &>/dev/null; then
         echo "Xvfb is ready."
         break
     fi
@@ -16,15 +22,21 @@ for i in {1..10}; do
     sleep 2
 done
 
-# Start ADB server
+# Запускаем ADB сервер
 adb start-server
 
-# Start Android emulator
-$ANDROID_SDK_ROOT/emulator/emulator -avd test -no-window -no-audio -port 5554 -gpu swiftshader_indirect -accel on -qemu -enable-kvm
+# Запускаем эмулятор Android
+$ANDROID_SDK_ROOT/emulator/emulator -avd test -no-window -no-audio -port 5554 -gpu swiftshader_indirect -accel on -qemu -enable-kvm &
 
-# Allow time for emulator startup
-sleep 30
+# Ждем завершения загрузки эмулятора
+boot_completed=""
+while [ "$boot_completed" != "1" ]; do
+    boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+    echo "Waiting for emulator to boot..."
+    sleep 5
+done
 
-# Switch ADB to TCP mode and connect
-adb -s emulator-5554 tcpip 5555
-adb connect localhost:5555
+echo "Emulator boot completed."
+
+# Оставляем контейнер активным
+tail -f /dev/null
