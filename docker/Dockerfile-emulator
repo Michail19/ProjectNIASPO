@@ -1,19 +1,9 @@
 # Используем базовый образ с Java и необходимыми утилитами
 FROM openjdk:11
 
-# Установка необходимых инструментов и библиотек
+# Установка необходимых инструментов
 RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        wget \
-        xvfb \
-        unzip \
-        lib32stdc++6 \
-        lib32z1 \
-        libglu1-mesa \
-        mesa-utils \
-        x11-utils \
-        libx11-6 \
-        && rm -rf /var/lib/apt/lists/*
+    apt-get install -y wget xvfb unzip lib32stdc++6 lib32z1 libglu1-mesa mesa-utils x11-utils x11-xserver-utils
 
 # Установка Android SDK
 ENV ANDROID_SDK_ROOT=/opt/android-sdk
@@ -36,3 +26,7 @@ COPY ./docker/run-emulator.sh ./run-emulator.sh
 RUN chmod +x ./run-emulator.sh
 
 ENV DISPLAY=:99
+# Запуск эмулятора через команду
+# CMD ["./run-emulator.sh"]
+
+CMD ./run-emulator.sh

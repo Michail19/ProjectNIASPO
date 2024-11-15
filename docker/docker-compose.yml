@@ -16,9 +16,9 @@ services:
       - my-network
     tty: true
     healthcheck:
-      test: ["CMD", "ls", "/tmp/.X11-unix/X0"]
+      test: ["CMD", "pidof", "Xvfb"]
       interval: 5s
-      retries: 5
+      retries: 3
       start_period: 10s
       timeout: 2s
     mem_limit: 2g
@@ -32,12 +32,10 @@ services:
     ports:
       - "5554:5554"
       - "5555:5555"
-      - "5037:5037"  # ADB-сервер
+      - "5037:5037"
     environment:
       - DISPLAY=:99
       - ADB_SERVER_PORT=5038
-      - XDG_RUNTIME_DIR=/tmp
-      - LIBGL_ALWAYS_SOFTWARE=1
     devices:
       - "/dev/kvm:/dev/kvm"
       - "/dev/fb0:/dev/fb0"
@@ -58,19 +56,19 @@ services:
     mem_limit: 4g
     cpus: "2.0"
     healthcheck:
-      test: ["CMD", "adb", "shell", "getprop", "sys.boot_completed"]
-      interval: 10s
-      retries: 10
-      start_period: 60s
-      timeout: 5s
+      test: ["CMD", "ls", "/tmp/.X11-unix/X0"]
+      interval: 5s
+      retries: 5
+      start_period: 10s
+      timeout: 2s
 
   novnc:
     build:
       context: ..
       dockerfile: docker/Dockerfile-novnc
     ports:
-      - "5900:5900"   # Порт для VNC
-      - "6080:6080"   # Порт для noVNC
+      - "5900:5900"
+      - "6080:6080"
     environment:
       - DISPLAY=:99
     privileged: true
