@@ -20,13 +20,13 @@ RUN apt-get update && \
         && rm -rf /var/lib/apt/lists/*
 
 # Устанавливаем переменную окружения для дисплея
-ENV DISPLAY=:0
+ENV DISPLAY=:99
 
 # Добавляем команду для проверки, что Xvfb запущен
 HEALTHCHECK --interval=5s --retries=5 CMD pidof Xvfb || exit 1
 
 # Запуск Xvfb
 RUN rm -rf /tmp/.X11-unix && mkdir -p /tmp/.X11-unix
-CMD rm -f /tmp/.X11-unix/X* && Xvfb :0 -screen 0 1280x720x24 -audit 4 & tail -f /dev/null
+CMD rm -f /tmp/.X11-unix/X* && Xvfb :99 -screen 0 1280x720x24 -audit 4 & tail -f /dev/null
 
 # CMD ["Xvfb", ":0", "-screen", "0", "1280x720x24"]

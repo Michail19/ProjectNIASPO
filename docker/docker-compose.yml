@@ -6,21 +6,23 @@ services:
       context: ..
       dockerfile: docker/Dockerfile-xvfb
     environment:
-      - DISPLAY=:0
+      - DISPLAY=:99
     volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix
-      - /dev/null:/dev/null
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    privileged: true
+    cap_add:
+      - SYS_ADMIN
     networks:
       - my-network
-    tty: true                # Оставить TTY для интерактивного режима
-    deploy:
-      resources:
-        limits:
-          cpus: '1.5'          # Увеличьте количество доступных CPU, если нужно
-          memory: 2G           # Увеличьте объем памяти, если доступно
-        reservations:
-          cpus: '1.0'
-          memory: 1G
+    tty: true
+    healthcheck:
+      test: ["CMD", "ls", "/tmp/.X11-unix/X0"]
+      interval: 5s
+      retries: 5
+      start_period: 10s
+      timeout: 2s
+    mem_limit: 2g
+    cpus: "1.5"
 
   emulator:
     shm_size: '1g'
@@ -32,34 +34,35 @@ services:
       - "5555:5555"
       - "5037:5037"  # ADB-сервер
     environment:
-      - DISPLAY=:0
+      - DISPLAY=:99
       - ADB_SERVER_PORT=5038
+      - XDG_RUNTIME_DIR=/tmp
+      - LIBGL_ALWAYS_SOFTWARE=1
     devices:
-      - "/dev/kvm:/dev/kvm"   # Монтирование устройства KVM
-      - "/dev/fb0:/dev/fb0"   # Монтирование устройства framebuffer
-      - "/dev/tty0:/dev/tty0" # Монтирование устройства tty0
-      - "/dev/tty1:/dev/tty1" # Монтирование устройства tty1
+      - "/dev/kvm:/dev/kvm"
+      - "/dev/fb0:/dev/fb0"
+      - "/dev/tty0:/dev/tty0"
+      - "/dev/tty1:/dev/tty1"
     privileged: true
     cap_add:
-      - SYS_ADMIN   # Даем дополнительные права
+      - SYS_ADMIN
     volumes:
       - ${PWD}/..:/app
-      - /tmp/.X11-unix:/tmp/.X11-unix
-      - /dev/null:/dev/null
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
     depends_on:
       xvfb:
         condition: service_healthy
     command: ./run-emulator.sh
     networks:
       - my-network
-    deploy:
-      resources:
-        limits:
-          memory: 4g        # Максимальный объем памяти для контейнера
-          cpus: "2.0"       # Ограничение на использование 2 CPU-ядра
-        reservations:
-          memory: 2g        # Резервируемый объем памяти для контейнера
-          cpus: "1.0"       # Резервируемое количество процессоров для контейнера
+    mem_limit: 4g
+    cpus: "2.0"
+    healthcheck:
+      test: ["CMD", "adb", "shell", "getprop", "sys.boot_completed"]
+      interval: 10s
+      retries: 10
+      start_period: 60s
+      timeout: 5s
 
   novnc:
     build:
@@ -69,15 +72,14 @@ services:
       - "5900:5900"   # Порт для VNC
       - "6080:6080"   # Порт для noVNC
     environment:
-      - DISPLAY=:0
+      - DISPLAY=:99
     privileged: true
     cap_add:
-      - SYS_ADMIN  # Добавляем необходимые права для работы с виртуализацией
+      - SYS_ADMIN
     volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix
-      - /dev/null:/dev/null
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
     depends_on:
-      xvfb:
+      emulator:
         condition: service_healthy
     command: /app/start-server.sh
     networks:
