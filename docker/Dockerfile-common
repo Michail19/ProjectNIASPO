@@ -1,16 +1,15 @@
 # Используем базовый образ с поддержкой JDK и Android SDK
-FROM openjdk:17-jdk-slim
+FROM openjdk:11-jdk-slim
 
 # Установка зависимостей и утилит
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     unzip \
     git \
-    bash \
     && rm -rf /var/lib/apt/lists/*
 
 # Установка Gradle
-ENV GRADLE_VERSION=8.9
+ENV GRADLE_VERSION=7.5
 RUN curl -sL https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -o gradle.zip \
     && mkdir /opt/gradle \
     && unzip gradle.zip -d /opt/gradle \
@@ -28,10 +27,9 @@ RUN mkdir -p ${ANDROID_HOME}/cmdline-tools \
 
 # Установка Android SDK и инструментов
 RUN yes | sdkmanager --licenses \
-    && sdkmanager --update \
     && sdkmanager --install "platform-tools" \
-    && sdkmanager --install "build-tools;33.0.0" \
-    && sdkmanager --install "platforms;android-33"
+    && sdkmanager --install "build-tools;30.0.3" \
+    && sdkmanager --install "platforms;android-30"
 
 # Установка линтеров (например, ktlint)
 RUN curl -sSLO https://github.com/pinterest/ktlint/releases/download/0.49.0/ktlint \
@@ -42,7 +40,7 @@ RUN curl -sSLO https://github.com/pinterest/ktlint/releases/download/0.49.0/ktli
 WORKDIR /app
 COPY . .
 
-# Обновление Gradle wrapper до последней версии
+# Обновление Gradle wrapper
 RUN ./gradlew wrapper --gradle-version ${GRADLE_VERSION}
 
 # Установка прав на Gradle wrapper
