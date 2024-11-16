@@ -116,7 +116,7 @@ services:
         condition: service_healthy
     networks:
       - my-network
-    command: bash -c "chmod 777 /tmp/adb/adb.sock && chown root:root /tmp/adb/adb.sock && adb -H localhost -P 5037 devices && adb -H localhost -P 5037 connect emulator:5555 && ./gradlew installDebug && sleep 300"
+    command: bash -c "sleep 30 && chmod 777 /tmp/adb/adb.sock && chown root:root /tmp/adb/adb.sock && adb -H localhost -P 5037 devices && adb -H localhost -P 5037 connect emulator:5555 && ./gradlew installDebug && sleep 300"
 
   artifact-repo:
     build:
