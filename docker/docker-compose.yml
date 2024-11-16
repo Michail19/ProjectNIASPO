@@ -30,12 +30,13 @@ services:
       context: ..
       dockerfile: docker/Dockerfile-emulator
     ports:
+      - "5037:5037"
       - "5554:5554"
       - "5555:5555"
-      - "5037:5037"
     environment:
       - DISPLAY=:99
-      - ADB_SERVER_PORT=5038
+      - ADB_SERVER_PORT=5037
+#      - ADB_SERVER_SOCKET=/tmp/adb/adb.sock
     devices:
       - "/dev/kvm:/dev/kvm"
       - "/dev/fb0:/dev/fb0"
@@ -44,16 +45,19 @@ services:
     privileged: true
     cap_add:
       - SYS_ADMIN
+      - NET_ADMIN
     volumes:
       - ${PWD}/..:/app
+      - adb-data:/tmp/adb
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - shared-volume:/shared
     depends_on:
       xvfb:
         condition: service_healthy
     command: ./run-emulator.sh
     networks:
       - my-network
+    extra_hosts:
+      - "emulator:172.18.0.4"
     mem_limit: 4g
     cpus: "2.0"
     healthcheck:
@@ -98,16 +102,21 @@ services:
       context: ..
       dockerfile: docker/Dockerfile-common
     working_dir: /app
-    networks:
-      - my-network
-    volumes:
-      - shared-volume:/shared
+    privileged: true
+    cap_add:
+      - NET_ADMIN
     environment:
+      - ADB_SERVER_HOST=emulator
       - ADB_SERVER_PORT=5037
+#      - ADB_SERVER_SOCKET=/tmp/adb/adb.sock
+    volumes:
+      - adb-data:/tmp/adb
     depends_on:
       emulator:
         condition: service_healthy
-    command: bash -c "adb connect emulator:5555 && ./gradlew installDebug"
+    networks:
+      - my-network
+    command: bash -c "adb devices && adb connect emulator:5555 && ./gradlew installDebug && sleep 300"
 
   artifact-repo:
     build:
@@ -120,7 +129,7 @@ services:
       - my-network
 
 volumes:
-  shared-volume:
+  adb-data:
 
 networks:
   my-network:

@@ -51,3 +51,5 @@ RUN ./gradlew dependencies
 
 # Команда по умолчанию
 CMD ["./gradlew", "tasks"]
+
+# ENV ADB_SERVER_SOCKET=/tmp/adb/adb.sock
