@@ -29,14 +29,22 @@ $ANDROID_SDK_ROOT/emulator/emulator -avd test -no-audio -port 5554 -no-skin -gpu
 sleep 15
 
 # Запускаем ADB сервер
-#ADB_SERVER_SOCKET=/tmp/adb/adb.sock adb -a -P 5037 start-server
-adb -a -P 5037 start-server
+export ADB_SERVER_SOCKET=/tmp/adb/adb.sock
+adb kill-server  # Убедитесь, что сервер перезапущен
+adb -H localhost -P 5037 devices
+
+echo 0 >/tmp/adb/adb.log
+chmod 777 /tmp/adb/adb.sock
+chmod 777 /tmp/adb/adb.log
+chown root:root /tmp/adb/adb.sock
+chown root:root /tmp/adb/adb.log
 # adb start-server
 
+unset ADB_SERVER_SOCKET
 # Ждём, пока adb станет доступен
 for i in {1..10}; do
     # if adb get-state >/dev/null 2>&1; then
-    if adb get-state >/tmp/adb/adb.log 2>&1; then
+    if adb get-state >>/tmp/adb/adb.log 2>&1; then
         echo "ADB is responding."
         break
     fi
@@ -50,12 +58,14 @@ ls -la /tmp/adb
 boot_completed=""
 while [ "$boot_completed" != "1" ]; do
     # boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
-    boot_completed=$(adb shell getprop sys.boot_completed 2>/tmp/adb/adb.log | tr -d '\r')
+    boot_completed=$(adb shell getprop sys.boot_completed 2>>/tmp/adb/adb.log | tr -d '\r')
     echo "Waiting for emulator to boot..."
     sleep 5
 done
 
 echo "Emulator boot completed."
+
+export ADB_SERVER_SOCKET=/tmp/adb/adb.sock
 
 # Оставляем контейнер активным
 # tail -f /dev/null
