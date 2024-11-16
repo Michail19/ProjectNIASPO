@@ -13,6 +13,9 @@ chmod -R 755 /root/.android
 chmod -R 1777 /tmp/.X11-unix
 chown root:root /tmp/.X11-unix
 
+# Запускаем ADB сервер
+adb -a -P 5037 nodaemon server &
+
 # Ждем запуска Xvfb
 for i in {1..10}; do
     if xdpyinfo -display :99 &>/dev/null; then
@@ -26,8 +29,7 @@ done
 # Запускаем эмулятор Android
 $ANDROID_SDK_ROOT/emulator/emulator -avd test -no-audio -port 5554 -gpu host -accel on -qemu -enable-kvm &
 
-# Запускаем ADB сервер
-adb start-server
+sleep 10
 
 # Ждём, пока adb станет доступен
 for i in {1..10}; do

@@ -37,17 +37,16 @@ RUN curl -sSLO https://github.com/pinterest/ktlint/releases/download/0.49.0/ktli
     && mv ktlint /usr/local/bin/
 
 # Копирование проекта в контейнер
-WORKDIR /app
-COPY . .
+COPY ./ /app
 
-# Обновление Gradle wrapper
-RUN ./gradlew wrapper --gradle-version ${GRADLE_VERSION}
+# Обновление Gradle wrapper в папке /app
+RUN /app/gradlew -p /app wrapper --gradle-version ${GRADLE_VERSION}
 
 # Установка прав на Gradle wrapper
-RUN chmod +x ./gradlew
+RUN chmod +x /app/gradlew
 
-# Установка зависимостей проекта
-RUN ./gradlew dependencies
+# Установка зависимостей проекта (из папки /app)
+RUN /app/gradlew -p /app dependencies
 
-# Команда по умолчанию
-CMD ["./gradlew", "tasks"]
+# Команда по умолчанию: сборка задач из папки /app
+CMD ["/app/gradlew", "-p", "/app", "build"]
