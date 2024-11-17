@@ -1,11 +1,15 @@
 # Используем базовый образ с JDK
 FROM openjdk:11-jdk-slim
 
-# Устанавливаем необходимые пакеты
-RUN apt-get update && apt-get install -y wget unzip novnc websockify && \
-    rm -rf /var/lib/apt/lists/*
+# Устанавливаем основные утилиты
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget \
+    curl \
+    unzip \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
-# Скачиваем и распаковываем Gradle
+# Устанавливаем Gradle
 ENV GRADLE_VERSION=7.4.2
 RUN wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -P /tmp && \
     unzip -d /opt/gradle /tmp/gradle-${GRADLE_VERSION}-bin.zip && \
@@ -15,31 +19,34 @@ RUN wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.
 ENV GRADLE_HOME=/opt/gradle/gradle-${GRADLE_VERSION}
 ENV PATH="${GRADLE_HOME}/bin:${PATH}"
 
-# Устанавливаем рабочую директорию
-WORKDIR /app
+# Устанавливаем Android SDK
+ENV ANDROID_HOME=/sdk
+ENV PATH="${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools:${PATH}"
 
-# Копируем проектные файлы
+RUN mkdir -p ${ANDROID_HOME}/cmdline-tools && \
+    curl -sL https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -o /cmdline-tools.zip && \
+    unzip /cmdline-tools.zip -d ${ANDROID_HOME}/cmdline-tools && \
+    rm /cmdline-tools.zip && \
+    mv ${ANDROID_HOME}/cmdline-tools/cmdline-tools ${ANDROID_HOME}/cmdline-tools/latest
+
+# Устанавливаем платформы и инструменты Android SDK
+RUN yes | sdkmanager --licenses && \
+    sdkmanager --install "platform-tools" \
+                        "platforms;android-30" \
+                        "build-tools;30.0.3"
+
+# Копируем проект в контейнер
+WORKDIR /app
 COPY . /app
 
-# Создаём gradlew, если его нет, и устанавливаем права на выполнение
+# Добавляем права на выполнение скрипта install_and_run.sh
+COPY ./docker/install_and_run.sh /usr/local/bin/install_and_run.sh
+RUN chmod +x /usr/local/bin/install_and_run.sh
+
+# Установка зависимостей Gradle
 RUN if [ ! -f "./gradlew" ]; then gradle wrapper --gradle-version ${GRADLE_VERSION}; fi && \
-    chmod +x ./gradlew
+    chmod +x ./gradlew && \
+    ./gradlew dependencies
 
-# Устанавливаем зависимости и загружаем Android SDK
-RUN apt-get update && apt-get install -y wget unzip
-
-# Скачиваем и распаковываем Android SDK
-RUN wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O /sdk-tools.zip && \
-    mkdir -p /sdk && \
-    unzip /sdk-tools.zip -d /sdk && \
-    rm /sdk-tools.zip
-
-# Устанавливаем нужные компоненты SDK
-RUN yes | /sdk/cmdline-tools/bin/sdkmanager --sdk_root=/sdk "platform-tools" "platforms;android-30" "build-tools;30.0.3"
-
-# Устанавливаем переменные окружения
-ENV ANDROID_HOME=/sdk
-ENV PATH="$PATH:/sdk/platform-tools:/sdk/cmdline-tools/bin"
-
-# Запускаем Gradle сборку
-CMD ["./gradlew", "build"]
+# Запуск скрипта как основной команды
+CMD ["/usr/local/bin/install_and_run.sh"]

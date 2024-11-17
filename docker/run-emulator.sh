@@ -14,8 +14,7 @@ chmod -R 1777 /tmp/.X11-unix
 chown root:root /tmp/.X11-unix
 
 # Запускаем ADB сервер
-#export ADB_SERVER_SOCKET=/adb-shared/adb.sock
-export ADB_SERVER_SOCKET=tcp:0.0.0.0:5037
+export ADB_SERVER_SOCKET=tcp:emulator:5037
 adb -a -P 5037 nodaemon server &
 
 # Ждем запуска Xvfb
@@ -33,7 +32,6 @@ $ANDROID_SDK_ROOT/emulator/emulator -avd test -no-audio -port 5554 -no-snapshot 
 
 sleep 10
 
-#unset ADB_SERVER_SOCKET
 # Ждём, пока adb станет доступен
 for i in {1..10}; do
 #    if adb get-state >/dev/null 2>&1; then
@@ -55,7 +53,6 @@ while [ "$boot_completed" != "1" ]; do
 done
 
 echo "Emulator boot completed."
-#export ADB_SERVER_SOCKET=/adb-shared/adb.sock
 
 # Оставляем контейнер активным
 # tail -f /dev/null
