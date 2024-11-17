@@ -35,8 +35,8 @@ services:
       - "5037:5037"
     environment:
       - DISPLAY=:99
+      - ADB_SERVER_HOST=0.0.0.0
       - ADB_SERVER_PORT=5037
-      - ADB_SERVER_SOCKET=tcp:0.0.0.0:5037
     devices:
       - "/dev/kvm:/dev/kvm"
       - "/dev/fb0:/dev/fb0"
@@ -52,14 +52,13 @@ services:
     depends_on:
       xvfb:
         condition: service_healthy
-    command: ./run-emulator.sh -no-host-only
+    command: ./run-emulator.sh
     networks:
       - my-network
     mem_limit: 4g
     cpus: "2.0"
     healthcheck:
-      test: ["CMD", "adb", "shell", "getprop", "sys.boot_completed"]
-#      test: bash -c "unset ADB_SERVER_SOCKET && adb shell getprop sys.boot_completed && export ADB_SERVER_SOCKET=/adb-shared/adb.sock"
+      test: bash -c "adb shell getprop sys.boot_completed | grep 1"
       interval: 10s
       retries: 10
       start_period: 60s
@@ -107,13 +106,14 @@ services:
     volumes:
       - adb-shared:/adb-shared
     environment:
-      - ADB_SERVER_HOST=emulator
+      - ADB_SERVER_HOST=0.0.0.0
       - ADB_SERVER_PORT=5037
-      - ADB_SERVER_SOCKET=tcp:emulator:5037
+      - ADB_SERVER_SOCKET=tcp:5037
     depends_on:
       emulator:
         condition: service_healthy
-    command: bash -c "export ADB_SERVER_SOCKET=tcp:emulator:5037 && adb devices && /app/gradlew -p /app installDebug --info"
+    command: bash -c "export ADB_SERVER_SOCKET=tcp:5037 && adb wait-for-device && adb devices && /app/gradlew -p /app installDebug --info"
+
 
   artifact-repo:
     build:
