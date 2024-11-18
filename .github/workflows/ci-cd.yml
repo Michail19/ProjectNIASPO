@@ -36,42 +36,8 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build Docker Compose services
-        run: docker-compose -f docker/docker-compose.yml build --no-cache
-
       - name: Start Docker Compose services
-        run: docker-compose -f docker/docker-compose.yml up
-
-      - name: Wait for Emulator to be ready
-        run: |
-          for i in {1..10}; do
-            if docker-compose logs emulator | grep -q "Boot completed"; then
-              echo "Emulator is ready.";
-              exit 0;
-            fi;
-            sleep 10;
-          done;
-          echo "Emulator failed to start.";
-          exit 1;
-
-      # Шаг 8: Сборка Gradle проекта
-      - name: Build with Gradle
-        run: |
-          docker-compose exec gradle /bin/bash -c "./gradlew assembleDebug"
-
-      # Шаг 9: Запуск линтера
-      - name: Run Linter
-        run: |
-          docker-compose exec linter ktlint
-
-      # Шаг 10: Тесты на Android эмуляторе
-      - name: Run Android Emulator Tests
-        run: |
-          docker-compose exec emulator /bin/bash -c "./run-emulator-tests.sh"
-
-      # Шаг 11: Диагностика логов
-      - name: Debug emulator logs
-        run: docker-compose logs emulator
+        run: docker-compose -f docker/docker-compose.yml up --build --no-cache
 
       # Шаг 12: Остановка сервисов
       - name: Stop Docker Compose services
