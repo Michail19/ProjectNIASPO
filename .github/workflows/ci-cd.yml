@@ -44,7 +44,7 @@ jobs:
 
       # Шаг 6: Запуск контейнеров
       - name: Start Docker Compose
-        run: docker-compose -f docker/docker-compose.yml up -d
+        run: docker-compose -f docker/docker-compose.yml up -it
 
       # Шаг 7: Ожидание запуска эмулятора
       - name: Wait for emulator to be ready
