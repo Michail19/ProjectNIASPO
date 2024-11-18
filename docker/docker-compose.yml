@@ -3,7 +3,7 @@ version: '3.8'
 services:
   xvfb:
     build:
-      context: ../
+      context: ..
       dockerfile: ./docker/Dockerfile-xvfb
     image: docker-xvfb:latest
     environment:
@@ -28,7 +28,7 @@ services:
   emulator:
     shm_size: '2g'
     build:
-      context: ../
+      context: ..
       dockerfile: ./docker/Dockerfile-emulator
     image: docker-emulator:latest
     ports:
@@ -71,7 +71,7 @@ services:
 
   novnc:
     build:
-      context: ../
+      context: ..
       dockerfile: ./docker/Dockerfile-novnc
     image: docker-novnc:latest
     ports:
@@ -93,7 +93,7 @@ services:
 
   linter:
     build:
-      context: ../
+      context: ..
       dockerfile: ./docker/Dockerfile-linter
     image: docker-linter:latest
     volumes:
@@ -105,7 +105,7 @@ services:
 
   gradle:
     build:
-      context: ../
+      context: ..
       dockerfile: ./docker/Dockerfile-gradle
     image: docker-gradle:latest
     networks:
@@ -126,7 +126,7 @@ services:
 
   artifact-repo:
     build:
-      context: ../
+      context: ..
       dockerfile: ./docker/Dockerfile-artifact-repo
     image: docker-artifact-repo:latest
     volumes:
