@@ -36,9 +36,14 @@ jobs:
           chmod +x ~/.docker/cli-plugins/docker-compose
           docker compose version
 
-      - name: Build Docker images
+#      - name: Build Docker images
+#        run: |
+#          docker compose -f docker/docker-compose.yml build
+
+      - name: Set working directory
+        working-directory: ./docker
         run: |
-          docker compose -f docker/docker-compose.yml build
+          docker compose build
 
       - name: Start xvfb, emulator, and novnc services
         run: |
