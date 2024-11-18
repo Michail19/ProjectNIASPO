@@ -37,7 +37,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Start Docker Compose services
-        run: docker-compose -f docker/docker-compose.yml up --build --no-cache
+        run: docker-compose -f docker/docker-compose.yml up --build
 
       # Шаг 12: Остановка сервисов
       - name: Stop Docker Compose services
