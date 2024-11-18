@@ -5,7 +5,6 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile-xvfb
-    image: custom-xvfb:1.0
     environment:
       - DISPLAY=:99
     volumes:
@@ -30,7 +29,6 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile-emulator
-    image: custom-emulator:1.0
     ports:
       - "5554:5554"
       - "5555:5555"
@@ -73,7 +71,6 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile-novnc
-    image: custom-novnc:1.0
     ports:
       - "5900:5900"
       - "6080:6080"
@@ -95,7 +92,6 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile-linter
-    image: custom-linter:1.0
     volumes:
       - .:/app
     working_dir: /app
@@ -107,7 +103,6 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile-gradle
-    image: custom-gradle:1.0
     networks:
       - my-network
     privileged: true
@@ -128,7 +123,6 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile-artifact-repo
-    image: custom-artifact-repo:1.0
     volumes:
       - ${PWD}/docker/artifacts:/artifacts
     command: sleep infinity
