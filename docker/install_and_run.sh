@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Название сервиса из docker-compose (замените, если используется другое имя)
-SERVICE_NAME=docker-gradle-1
-
 # Сборка APK
 /app/gradlew -p /app assembleDebug
 

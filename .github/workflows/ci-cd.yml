@@ -38,27 +38,46 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Шаг 5: Сборка и запуск контейнеров
-      - name: Start Docker Compose
-        run: |
-          docker-compose -f docker/docker-compose.yml up -d --build
-          sleep 30
+      # Шаг 5: Сборка Docker Compose
+      - name: Build Docker Compose services
+        run: docker-compose -f docker/docker-compose.yml build --no-cache --progress=plain
 
-      # Шаг 6: Сборка Gradle проекта
+      # Шаг 6: Запуск контейнеров
+      - name: Start Docker Compose
+        run: docker-compose -f docker/docker-compose.yml up
+
+      # Шаг 7: Ожидание запуска эмулятора
+      - name: Wait for emulator to be ready
+        run: |
+          for i in {1..10}; do
+            if docker-compose logs emulator | grep -q "Boot completed"; then
+              echo "Emulator is ready.";
+              exit 0;
+            fi;
+            sleep 10;
+          done;
+          echo "Emulator failed to start.";
+          exit 1;
+
+      # Шаг 8: Сборка Gradle проекта
       - name: Build with Gradle
         run: |
           docker-compose exec gradle /bin/bash -c "./gradlew assembleDebug"
 
-      # Шаг 7: Запуск линтера
+      # Шаг 9: Запуск линтера
       - name: Run Linter
         run: |
           docker-compose exec linter ktlint
 
-      # Шаг 8: Тесты на Android эмуляторе
+      # Шаг 10: Тесты на Android эмуляторе
       - name: Run Android Emulator Tests
         run: |
           docker-compose exec emulator /bin/bash -c "./run-emulator-tests.sh"
 
-      # Шаг 9: Остановка сервисов
+      # Шаг 11: Диагностика логов
+      - name: Debug emulator logs
+        run: docker-compose logs emulator
+
+      # Шаг 12: Остановка сервисов
       - name: Stop Docker Compose services
         run: docker-compose -f docker/docker-compose.yml down

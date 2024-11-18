@@ -42,6 +42,4 @@ ENV DISPLAY=:99
 # Запуск эмулятора через команду
 # CMD ["./run-emulator.sh"]
 
-RUN apt-get update && apt-get install -y socat
-
 CMD ./run-emulator.sh
