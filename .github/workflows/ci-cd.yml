@@ -48,7 +48,9 @@ jobs:
       - name: Start xvfb, emulator, and novnc services
         working-directory: ./docker
         run: |
-          docker compose up -d xvfb emulator novnc
+          docker compose config
+          docker images
+          docker compose up xvfb emulator novnc
         timeout-minutes: 10
 
       - name: Wait for emulator health check
