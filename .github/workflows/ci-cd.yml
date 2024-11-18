@@ -5,79 +5,53 @@ on:
     branches:
       - main
   pull_request:
+    branches:
+      - main
 
 jobs:
-  build:
-    name: Build and Test
+  build-and-test:
     runs-on: ubuntu-latest
 
-    services:
-      docker:
-        image: docker:24.0.0
-        options: --privileged
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+    - name: Install Docker Compose
+      run: |
+        mkdir -p ~/.docker/cli-plugins/
+        curl -SL https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
+        chmod +x ~/.docker/cli-plugins/docker-compose
+        docker compose version
 
-      - name: Install Docker Compose
-        run: |
-          mkdir -p ~/.docker/cli-plugins/
-          curl -SL https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
-          chmod +x ~/.docker/cli-plugins/docker-compose
-          docker compose version
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
 
-      - name: Debug project structure
-        run: |
-          echo "Project root:"
-          ls -la
-          echo "Docker directory:"
-          ls -la ./docker
+    - name: Cache Docker layers
+      uses: actions/cache@v3
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-docker-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-docker-
 
-      - name: Build Docker images
-        working-directory: ./docker
-        run: |
-          docker compose build
+    - name: Build and start services
+      run: |
+        docker-compose -f docker/docker-compose.yml build \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --cache-from=type=local,src=/tmp/.buildx-cache \
+          --cache-to=type=local,dest=/tmp/.buildx-cache
+        docker-compose -f docker/docker-compose.yml up --detach
 
-      - name: Start emulator and services
-        working-directory: ./docker
-        run: |
-          docker compose up -d xvfb emulator novnc
+    - name: Verify running containers
+      run: |
+        docker-compose -f docker/docker-compose.yml ps
+        docker-compose -f docker/docker-compose.yml logs --tail=100
 
-      - name: Wait for emulator health check
-        working-directory: ./docker
-        run: |
-          while [ "$(docker inspect --format='{{json .State.Health.Status}}' $(docker compose ps -q emulator))" != "\"healthy\"" ]; do
-            echo "Waiting for emulator to become healthy..."
-            sleep 10
-          done
+    - name: Run tests (optional)
+      run: |
+        docker-compose -f docker/docker-compose.yml exec gradle ./gradlew test
+        docker-compose -f docker/docker-compose.yml exec gradle ./gradlew lint
 
-      - name: Run linter
-        working-directory: ./docker
-        run: |
-          docker compose run --rm linter
-
-      - name: Run tests
-        working-directory: ./docker
-        run: |
-          docker compose run --rm gradle
-
-      - name: Collect artifacts
-        working-directory: ./docker
-        run: |
-          mkdir -p artifacts
-          docker compose run --rm artifact-repo cp -r /artifacts/* ./artifacts
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-artifacts
-          path: ./docker/artifacts
-
-      - name: Clean up
-        working-directory: ./docker
-        run: |
-          docker compose down -v
+    - name: Shut down services
+      if: always()
+      run: docker-compose -f docker/docker-compose.yml down --volumes
