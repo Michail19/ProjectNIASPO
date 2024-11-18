@@ -40,8 +40,8 @@ WORKDIR /app
 COPY . /app
 
 # Добавляем права на выполнение скрипта install_and_run.sh
-COPY ./docker/install_and_run.sh /usr/local/bin/install_and_run.sh
-RUN chmod +x /usr/local/bin/install_and_run.sh
+COPY ./docker/install_and_run.sh ./install_and_run.sh
+RUN chmod +x ./install_and_run.sh
 
 # Установка зависимостей Gradle
 RUN if [ ! -f "./gradlew" ]; then gradle wrapper --gradle-version ${GRADLE_VERSION}; fi && \
@@ -49,4 +49,4 @@ RUN if [ ! -f "./gradlew" ]; then gradle wrapper --gradle-version ${GRADLE_VERSI
     ./gradlew dependencies
 
 # Запуск скрипта как основной команды
-CMD ["/usr/local/bin/install_and_run.sh"]
+CMD ["./install_and_run.sh"]

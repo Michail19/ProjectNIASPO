@@ -108,7 +108,6 @@ services:
       - SYS_ADMIN
     volumes:
       - adb-shared:/adb-shared
-    container_name: docker-gradle-1
     environment:
       - ADB_SERVER_HOST=emulator
       - ADB_SERVER_PORT=5037
@@ -116,7 +115,7 @@ services:
     depends_on:
       emulator:
         condition: service_healthy
-    command: bash -c "export ADB_SERVER_SOCKET=tcp:emulator:5037 && adb devices && /usr/local/bin/install_and_run.sh"
+    command: bash -c "export ADB_SERVER_SOCKET=tcp:emulator:5037 && adb devices && ./install_and_run.sh"
 
   artifact-repo:
     build:
