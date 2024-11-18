@@ -36,11 +36,7 @@ jobs:
           chmod +x ~/.docker/cli-plugins/docker-compose
           docker compose version
 
-#      - name: Build Docker images
-#        run: |
-#          docker compose -f docker/docker-compose.yml build
-
-      - name: Set working directory
+      - name: Build Docker images
         working-directory: ./docker
         run: |
           docker compose build
@@ -48,10 +44,7 @@ jobs:
       - name: Start xvfb, emulator, and novnc services
         working-directory: ./docker
         run: |
-          docker compose config
-          docker images
-          docker compose up xvfb emulator novnc
-        timeout-minutes: 10
+          docker compose up -d xvfb emulator novnc
 
       - name: Wait for emulator health check
         working-directory: ./docker
