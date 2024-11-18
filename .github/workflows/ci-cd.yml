@@ -47,7 +47,7 @@ jobs:
 
       - name: Start xvfb, emulator, and novnc services
         run: |
-          docker compose -f docker/docker-compose.yml up -d xvfb emulator novnc
+          docker compose up -d xvfb emulator novnc
         timeout-minutes: 10
 
       - name: Wait for emulator health check
@@ -59,16 +59,16 @@ jobs:
 
       - name: Lint code
         run: |
-          docker compose -f docker/docker-compose.yml run --rm linter
+          docker compose run --rm linter
 
       - name: Run tests with Gradle
         run: |
-          docker compose -f docker/docker-compose.yml run --rm gradle
+          docker compose run --rm gradle
 
       - name: Collect artifacts
         run: |
           mkdir -p artifacts
-          docker compose -f docker/docker-compose.yml run --rm artifact-repo cp -r /artifacts/* ./artifacts
+          docker compose run --rm artifact-repo cp -r /artifacts/* ./artifacts
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
