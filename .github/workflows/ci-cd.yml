@@ -36,9 +36,12 @@ jobs:
           chmod +x ~/.docker/cli-plugins/docker-compose
           docker compose version
 
-      - name: Build Docker images
+      - name: Check and build Docker images
         working-directory: ./docker
         run: |
+          if ! docker images | grep -q "docker-emulator"; then
+            docker build -t docker-emulator:latest ./emulator
+          fi
           docker compose build
 
       - name: Start xvfb, emulator, and novnc services
