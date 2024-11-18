@@ -26,7 +26,7 @@ services:
     cpus: "1.5"
 
   emulator:
-    shm_size: '1g'
+    shm_size: '2g'
     build:
       context: ..
       dockerfile: docker/Dockerfile-emulator
@@ -58,7 +58,7 @@ services:
     command: ./run-emulator.sh -no-host-only
     networks:
       - my-network
-    mem_limit: 4g
+    mem_limit: 8g
     storage_opt:
         size: 12G
     cpus: "2.0"
