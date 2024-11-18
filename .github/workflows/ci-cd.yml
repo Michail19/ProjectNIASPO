@@ -46,11 +46,13 @@ jobs:
           docker compose build
 
       - name: Start xvfb, emulator, and novnc services
+        working-directory: ./docker
         run: |
           docker compose up -d xvfb emulator novnc
         timeout-minutes: 10
 
       - name: Wait for emulator health check
+        working-directory: ./docker
         run: |
           while [ "$(docker inspect --format='{{json .State.Health.Status}}' $(docker compose ps -q emulator))" != "\"healthy\"" ]; do
             echo "Waiting for emulator to become healthy..."
@@ -58,14 +60,17 @@ jobs:
           done
 
       - name: Lint code
+        working-directory: ./docker
         run: |
           docker compose run --rm linter
 
       - name: Run tests with Gradle
+        working-directory: ./docker
         run: |
           docker compose run --rm gradle
 
       - name: Collect artifacts
+        working-directory: ./docker
         run: |
           mkdir -p artifacts
           docker compose run --rm artifact-repo cp -r /artifacts/* ./artifacts
