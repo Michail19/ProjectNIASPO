@@ -23,12 +23,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Log in to DockerHub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
       - name: Install Docker Compose
         run: |
           mkdir -p ~/.docker/cli-plugins/
@@ -36,15 +30,19 @@ jobs:
           chmod +x ~/.docker/cli-plugins/docker-compose
           docker compose version
 
-      - name: Check and build Docker images
+      - name: Debug project structure
+        run: |
+          echo "Project root:"
+          ls -la
+          echo "Docker directory:"
+          ls -la ./docker
+
+      - name: Build Docker images
         working-directory: ./docker
         run: |
-          if ! docker images | grep -q "docker-emulator"; then
-            docker build -t docker-emulator:latest ./emulator
-          fi
           docker compose build
 
-      - name: Start xvfb, emulator, and novnc services
+      - name: Start emulator and services
         working-directory: ./docker
         run: |
           docker compose up -d xvfb emulator novnc
@@ -57,12 +55,12 @@ jobs:
             sleep 10
           done
 
-      - name: Lint code
+      - name: Run linter
         working-directory: ./docker
         run: |
           docker compose run --rm linter
 
-      - name: Run tests with Gradle
+      - name: Run tests
         working-directory: ./docker
         run: |
           docker compose run --rm gradle
@@ -77,8 +75,9 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
-          path: ./artifacts
+          path: ./docker/artifacts
 
       - name: Clean up
+        working-directory: ./docker
         run: |
           docker compose down -v
