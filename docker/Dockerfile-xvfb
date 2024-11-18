@@ -1,0 +1,32 @@
+# Используем базовый образ Ubuntu 20.04
+FROM ubuntu:20.04
+
+# Установить базовые зависимости для работы с Xvfb
+RUN apt-get update && \
+    apt-get install -y \
+        xvfb \
+        x11vnc \
+        x11-apps \
+        libx11-dev \
+        libgl1-mesa-glx \
+        libgl1-mesa-dri \
+        mesa-utils \
+        libxrender1 \
+        libxtst6 \
+        dbus-x11 \
+        xfonts-base \
+        xfonts-75dpi \
+        xfonts-100dpi \
+        && rm -rf /var/lib/apt/lists/*
+
+# Устанавливаем переменную окружения для дисплея
+ENV DISPLAY=:99
+
+# Добавляем команду для проверки, что Xvfb запущен
+# HEALTHCHECK --interval=5s --retries=5 CMD pidof Xvfb || exit 1
+
+# Запуск Xvfb
+RUN rm -rf /tmp/.X11-unix && mkdir -p /tmp/.X11-unix
+CMD rm -f /tmp/.X11-unix/X* && Xvfb :99 -screen 0 1280x720x24 -audit 4 & tail -f /dev/null
+
+# CMD ["Xvfb", ":0", "-screen", "0", "1280x720x24"]

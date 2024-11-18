@@ -1,0 +1,64 @@
+# Используем базовый образ с поддержкой JDK и Android SDK
+FROM openjdk:11-jdk-slim
+
+# Установка зависимостей и утилит
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    unzip \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Установка Gradle
+ENV GRADLE_VERSION=7.5
+RUN curl -sL https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -o gradle.zip \
+    && mkdir /opt/gradle \
+    && unzip gradle.zip -d /opt/gradle \
+    && rm gradle.zip
+ENV PATH="/opt/gradle/gradle-${GRADLE_VERSION}/bin:${PATH}"
+
+# Установка Android Command Line Tools
+ENV ANDROID_HOME=/opt/android-sdk
+ENV PATH="${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools:${PATH}"
+RUN mkdir -p ${ANDROID_HOME}/cmdline-tools \
+    && curl -sL https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -o cmdline-tools.zip \
+    && unzip cmdline-tools.zip -d ${ANDROID_HOME}/cmdline-tools \
+    && rm cmdline-tools.zip \
+    && mv ${ANDROID_HOME}/cmdline-tools/cmdline-tools ${ANDROID_HOME}/cmdline-tools/latest
+
+# Установка Android SDK и инструментов
+RUN yes | sdkmanager --licenses \
+    && sdkmanager --install "platform-tools" \
+    && sdkmanager --install "build-tools;30.0.3" \
+    && sdkmanager --install "platforms;android-30"
+
+# Установка линтеров (например, ktlint)
+RUN curl -sSLO https://github.com/pinterest/ktlint/releases/download/0.49.0/ktlint \
+    && chmod +x ktlint \
+    && mv ktlint /usr/local/bin/
+
+FROM common AS gradle
+
+# Установка Gradle
+ENV GRADLE_VERSION=7.5
+RUN curl -sL https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -o gradle.zip \
+    && mkdir /opt/gradle \
+    && unzip gradle.zip -d /opt/gradle \
+    && rm gradle.zip
+ENV PATH="/opt/gradle/gradle-${GRADLE_VERSION}/bin:${PATH}"
+
+# Копирование проекта
+COPY ./app /app
+
+# Обновление Gradle wrapper
+RUN /app/gradlew -p /app wrapper --gradle-version ${GRADLE_VERSION}
+
+# Установка зависимостей
+RUN /app/gradlew -p /app dependencies
+
+COPY ./docker/install_and_run.sh ./install_and_run.sh
+RUN chmod +x ./install_and_run.sh
+
+CMD ./install_and_run.sh
+
+# Команда по умолчанию
+CMD ["/bin/bash"]

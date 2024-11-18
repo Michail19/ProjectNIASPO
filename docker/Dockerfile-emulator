@@ -1,57 +1,47 @@
-FROM ubuntu:20.04
-
-# Установка переменной окружения для предотвращения интерактивного режима
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Настройка временной зоны
-RUN apt update && apt install -y tzdata && \
-    ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime && \
-    dpkg-reconfigure --frontend noninteractive tzdata
+# Используем базовый образ с Java и необходимыми утилитами
+FROM openjdk:11
 
 # Установка необходимых инструментов
-RUN apt update && apt install -y \
-    openjdk-11-jdk \
-    wget \
-    unzip \
-    lib32stdc++6 \
-    lib32z1 \
-    qemu-kvm \
-    x11vnc \
-    xvfb \
-    git \
-    fluxbox \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN apt update && apt install -y \
-    libgl1-mesa-glx \
-    libgl1-mesa-dri \
-    libsdl1.2debian \
-    lib32gcc1 \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        wget \
+        xvfb \
+        unzip \
+        lib32stdc++6 \
+        lib32z1 \
+        libglu1-mesa \
+        mesa-utils \
+        x11-utils \
+        libx11-6 \
+        libpulse0 \
+        pulseaudio \
+        libnss3 \
+        && rm -rf /var/lib/apt/lists/*
 
 # Установка Android SDK
-RUN wget https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip -O cmdline-tools.zip && \
-    mkdir -p /sdk/cmdline-tools && \
-    unzip cmdline-tools.zip -d /sdk/cmdline-tools && \
-    rm cmdline-tools.zip
+ENV ANDROID_SDK_ROOT=/opt/android-sdk
+RUN mkdir -p $ANDROID_SDK_ROOT/cmdline-tools && \
+    wget -q https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip -O /cmdline-tools.zip && \
+    unzip /cmdline-tools.zip -d /tmp/cmdline-tools && \
+    mv /tmp/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest && \
+    rm /cmdline-tools.zip && rm -rf /tmp/cmdline-tools && \
+    yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses && \
+    $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-30" "system-images;android-30;google_apis;x86_64" "emulator"
 
-# Настройка пути к Android SDK
-ENV ANDROID_HOME=/sdk
-ENV PATH="${ANDROID_HOME}/cmdline-tools/cmdline-tools/bin:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/emulator:${PATH}"
+# Добавляем инструменты Android SDK в PATH
+ENV PATH="$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools"
 
-# Принимаем лицензионные соглашения и устанавливаем необходимые компоненты
-RUN yes | sdkmanager --licenses
-RUN sdkmanager "platform-tools" "emulator" "platforms;android-30" "system-images;android-30;google_apis;x86_64"
+# Создаем и настраиваем эмулятор
+RUN echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n test -k "system-images;android-30;google_apis;x86_64"
 
-# Создаем виртуальное устройство (AVD)
-RUN echo "no" | avdmanager create avd -n test_avd -k "system-images;android-30;google_apis;x86_64" --device "pixel"
+# Копируем скрипт запуска эмулятора в контейнер
+COPY ./docker/run-emulator.sh ./run-emulator.sh
+RUN chmod +x ./run-emulator.sh
 
-# Копируем скрипт для запуска эмулятора
-COPY ./docker/run-emulator.sh /run-emulator.sh
-RUN chmod +x /run-emulator.sh
+ENV DISPLAY=:99
+# Запуск эмулятора через команду
+# CMD ["./run-emulator.sh"]
 
-# Установка adb
-RUN apt update && apt install -y android-tools-adb
+RUN apt-get update && apt-get install -y socat
 
-# Команда для запуска эмулятора, Xvfb и x11vnc
-CMD ["/run-emulator.sh"]
+CMD ./run-emulator.sh

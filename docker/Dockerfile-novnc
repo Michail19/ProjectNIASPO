@@ -1,30 +1,23 @@
-# Используем базовый образ с Ubuntu
+# Используем базовый образ Ubuntu
 FROM ubuntu:20.04
 
-# Установка переменной окружения для предотвращения интерактивного режима
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Установка зависимостей
-RUN apt update && apt install -y tzdata novnc websockify x11vnc git xvfb python3 python3-pip && \
+# Установка необходимых пакетов
+RUN apt-get update && \
+    apt-get install -y wget xvfb x11vnc novnc websockify net-tools fluxbox x11-utils iputils-ping adb && \
     apt-get clean
 
-RUN apt update && apt install -y \
-    mesa-utils libgl1-mesa-glx libgl1-mesa-dri
+RUN wget https://github.com/novnc/noVNC/archive/refs/tags/v1.2.0.tar.gz && \
+    tar -xzf v1.2.0.tar.gz && \
+    mv noVNC-1.2.0 /usr/share/novnc && \
+    rm v1.2.0.tar.gz
 
-# Установка Python зависимостей
-RUN pip3 install numpy
+# Копируем скрипт запуска noVNC
+COPY ./docker/start-server.sh /app/start-server.sh
+RUN chmod +x /app/start-server.sh
 
-# Клонируем NoVNC
-RUN git clone --branch v1.2.0 https://github.com/novnc/noVNC.git /noVNC
-
-# Копируем ваш собственный скрипт запуска в контейнер
-COPY ./docker/start-server.sh /start-server.sh
-
-# Даем права на выполнение вашему скрипту
-RUN chmod +x /start-server.sh
-
-# Открываем нужные порты
+# Открываем порты для VNC и noVNC
 EXPOSE 5900 6080
+ENV DISPLAY=:99
 
-# Используем ваш скрипт как команду для запуска
-CMD /start-server.sh
+# Запуск noVNC сервера через команду
+CMD ["/bin/bash", "-c", "/app/start-server.sh"]
