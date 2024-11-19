@@ -79,54 +79,61 @@ adb install /путь/к/вашему/приложению.apk
 
 ## Архитектура
 
-mermaid
-Копировать код
-graph LR
-    A[Docker Compose] -->|Зависимости| B[Xvfb]
-    B --> C[Android Emulator]
-    C --> D[ADB Server]
-    D --> E[Тесты CI/CD]
-    C --> F[NoVNC для отладки]
+Архитектура проекта выглядит так:
+
+```
+
+```
     
 ## Подробности реализации
 
 1. Docker Compose
 Сервисы:
 
-xvfb: Виртуальный дисплей для работы эмулятора.
-emulator: Android эмулятор с ADB-сервером.
-novnc: Веб-доступ к эмулятору через VNC.
+* xvfb: Виртуальный дисплей для работы эмулятора.
+* emulator: Android эмулятор с ADB-сервером.
+* novnc: Веб-доступ к эмулятору через VNC и noVNC через браузер.
+
 2. Healthcheck
+
 Используется для проверки готовности эмулятора:
 
-yaml
-Копировать код
+```yaml
 healthcheck:
   test: ["CMD", "adb", "shell", "getprop", "sys.boot_completed"]
   interval: 10s
   retries: 10
   start_period: 60s
   timeout: 5s
+```
+
 3. Скрипт запуска
+
 run-emulator.sh управляет состоянием эмулятора:
 
-bash
-Копировать код
+```bash
 boot_completed=""
 while [ "$boot_completed" != "1" ]; do
     boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
     echo "Waiting for emulator to boot..."
     sleep 5
 done
+```
 
 ## FAQ
 
 1. Почему эмулятор не запускается?
+
 Проверьте доступность /dev/kvm на хосте.
+
 Убедитесь, что указаны правильные переменные среды (DISPLAY, ADB_SERVER_HOST).
+
 2. Можно ли запускать проект без Docker?
+
 Нет, проект ориентирован на контейнеризацию для обеспечения стабильной работы.
 
 ## Контакты
+
 Автор: Михаил
+
 Если у вас есть вопросы или предложения, создайте issue в репозитории.
