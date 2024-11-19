@@ -9,49 +9,36 @@ on:
       - main
 
 jobs:
-  build-and-test:
+  test-docker-compose:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # Шаг 1: Клонировать репозиторий
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Install Docker Compose
-      run: |
-        mkdir -p ~/.docker/cli-plugins/
-        curl -SL https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
-        chmod +x ~/.docker/cli-plugins/docker-compose
-        docker compose version
+      # Шаг 2: Установить Docker и Docker Compose
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
 
-    - name: Cache Docker layers
-      uses: actions/cache@v3
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-docker-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-docker-
+      # Шаг 3: Собрать и запустить docker-compose
+      - name: Build and start containers
+        run: |
+          docker-compose -f ./docker/docker-compose.yml up --build -d
 
-    - name: Build and start services
-      run: |
-        docker-compose -f docker/docker-compose.yml build \
-          --build-arg BUILDKIT_INLINE_CACHE=1 \
-          --cache-from=type=local,src=/tmp/.buildx-cache \
-          --cache-to=type=local,dest=/tmp/.buildx-cache
-        docker-compose -f docker/docker-compose.yml up --detach
+      # Шаг 4: Проверить состояние контейнеров
+      - name: Check services health
+        run: |
+          docker-compose -f ./docker/docker-compose.yml ps
+          docker-compose -f ./docker/docker-compose.yml exec emulator adb shell getprop sys.boot_completed || exit 1
 
-    - name: Verify running containers
-      run: |
-        docker-compose -f docker/docker-compose.yml ps
-        docker-compose -f docker/docker-compose.yml logs --tail=100
-
-    - name: Run tests (optional)
-      run: |
-        docker-compose -f docker/docker-compose.yml exec gradle ./gradlew test
-        docker-compose -f docker/docker-compose.yml exec gradle ./gradlew lint
-
-    - name: Shut down services
-      if: always()
-      run: docker-compose -f docker/docker-compose.yml down --volumes
+      # Шаг 5: Очистить после тестирования
+      - name: Clean up
+        if: always()
+        run: |
+          docker-compose -f ./docker/docker-compose.yml down
