@@ -204,12 +204,23 @@ ProjectNIASPO
 Используется для проверки готовности эмулятора:
 
 ```yaml
-healthcheck:
-  test: ["CMD", "adb", "shell", "getprop", "sys.boot_completed"]
-  interval: 10s
-  retries: 10
-  start_period: 60s
-  timeout: 5s
+xvfb:
+    healthcheck:
+      test: ["CMD", "ls", "/tmp/.X11-unix/X99"]
+      interval: 5s
+      retries: 5
+      start_period: 10s
+      timeout: 2s
+    mem_limit: 2g
+    cpus: "1.5"
+
+emulator:
+    healthcheck:
+      test: ["CMD", "adb", "shell", "getprop", "sys.boot_completed"]
+      interval: 10s
+      retries: 10
+      start_period: 60s
+      timeout: 5s
 ```
 
 3. Скрипт запуска
