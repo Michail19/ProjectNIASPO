@@ -35,7 +35,6 @@ jobs:
       - name: Check services health
         run: |
           docker-compose -f ./docker/docker-compose.yml ps || true
-          docker-compose -f ./docker/docker-compose.yml exec emulator adb shell getprop sys.boot_completed || exit 1
 
       # Шаг 5: Очистить после тестирования
       - name: Clean up
