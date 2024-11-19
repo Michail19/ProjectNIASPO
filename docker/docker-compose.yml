@@ -15,6 +15,7 @@ services:
       - SYS_ADMIN
     networks:
       - my-network
+    stdin_open: true
     healthcheck:
       test: ["CMD", "ls", "/tmp/.X11-unix/X99"]
       interval: 5s
@@ -54,6 +55,7 @@ services:
     command: ./run-emulator.sh -no-host-only
     networks:
       - my-network
+    stdin_open: true
     mem_limit: 8g
     cpus: "2.0"
     healthcheck:
@@ -84,6 +86,7 @@ services:
     command: /app/start-server.sh
     networks:
       - my-network
+    stdin_open: true
 
   linter:
     build:
@@ -96,6 +99,7 @@ services:
     command: ["ktlint"]
     networks:
       - my-network
+    stdin_open: true
 
   gradle:
     build:
@@ -104,6 +108,7 @@ services:
     image: docker-gradle:latest
     networks:
       - my-network
+    stdin_open: true
     privileged: true
     cap_add:
       - SYS_ADMIN
@@ -128,6 +133,7 @@ services:
     command: sleep infinity
     networks:
       - my-network
+    stdin_open: true
 
 volumes:
   adb-shared:
