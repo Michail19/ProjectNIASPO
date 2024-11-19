@@ -24,36 +24,44 @@
 * Гибкость и масштабируемость: Лёгкая адаптация под любые мобильные проекты.
 ------------------------
 ## Как использовать
+
 1. Клонирование репозитория
 
 ```bash
-git clone https://github.com/ваш-username/ваш-репозиторий.git
-cd ваш-репозиторий
+git clone https://github.com/Michail19/ProjectNIASPO.git
+cd ProjectNIASPO
 ```
 
 2. Настройка Docker Compose
-Откройте файл docker/docker-compose.yml и проверьте настройки портов, ресурсов и переменных среды.
+
+Откройте файл ``docker/docker-compose.yml`` и проверьте настройки портов, ресурсов и переменных среды.
 
 3. Запуск среды
+
 Запустите окружение с помощью команды:
 
 ```bash
 docker-compose -f ./docker/docker-compose.yml up --build
 ```
+
 Эмулятор начнёт загрузку, а состояние можно проверить через:
 
 ```bash
 docker-compose ps
 ```
+------------------------
 ## Требования
 
 * ОС: Linux, Windows или MacOS с поддержкой Docker.
 * Docker: Версия 20.10 или выше.
 * Docker Compose: Версия 2.0 или выше.
 * Поддержка KVM: Для эмуляции Android (Linux) или Hyper-V (Windows).
-
+------------------------
 ## Запуск
 
+
+
+------------------------
 ### Проверка эмулятора
 
 Чтобы убедиться, что эмулятор запущен и готов к использованию:
@@ -69,7 +77,8 @@ List of devices attached
 emulator-5554 device
 ```
 
-Установка APK
+------------------------
+### Установка APK
 
 Для тестирования приложения, можно загрузить файл APK в контейнер:
 
@@ -77,17 +86,117 @@ emulator-5554 device
 adb install /путь/к/вашему/приложению.apk
 ```
 
+``install_and_run.sh`` уже имеет предустановленный APK, и запустит его после окончания сборки проекта в сервисе Gradle. 
+
+------------------------
 ## Архитектура
 
 Архитектура проекта выглядит так:
 
 ```
-
+ProjectNIASPO
+├── app
+│   ├── build.gradle
+│   ├── proguard-rules.pro
+│   └── src
+│       ├── androidTest
+│       │   └── java
+│       │       └── com
+│       │           └── me
+│       │               └── projectniaspo
+│       │                   └── ExampleInstrumentedTest.java
+│       ├── main
+│       │   ├── AndroidManifest.xml
+│       │   ├── java
+│       │   │   └── com
+│       │   │       └── me
+│       │   │           └── projectniaspo
+│       │   │               ├── FirstFragment.java
+│       │   │               ├── MainActivity.java
+│       │   │               └── SecondFragment.java
+│       │   └── res
+│       │       ├── drawable
+│       │       │   └── ic_launcher_background.xml
+│       │       ├── drawable-v24
+│       │       │   └── ic_launcher_foreground.xml
+│       │       ├── layout
+│       │       │   ├── activity_main.xml
+│       │       │   ├── content_main.xml
+│       │       │   ├── fragment_first.xml
+│       │       │   └── fragment_second.xml
+│       │       ├── menu
+│       │       │   └── menu_main.xml
+│       │       ├── mipmap-anydpi-v26
+│       │       │   ├── ic_launcher_round.xml
+│       │       │   └── ic_launcher.xml
+│       │       ├── mipmap-hdpi
+│       │       │   ├── ic_launcher_round.webp
+│       │       │   └── ic_launcher.webp
+│       │       ├── mipmap-mdpi
+│       │       │   ├── ic_launcher_round.webp
+│       │       │   └── ic_launcher.webp
+│       │       ├── mipmap-xhdpi
+│       │       │   ├── ic_launcher_round.webp
+│       │       │   └── ic_launcher.webp
+│       │       ├── mipmap-xxhdpi
+│       │       │   ├── ic_launcher_round.webp
+│       │       │   └── ic_launcher.webp
+│       │       ├── mipmap-xxxhdpi
+│       │       │   ├── ic_launcher_round.webp
+│       │       │   └── ic_launcher.webp
+│       │       ├── navigation
+│       │       │   └── nav_graph.xml
+│       │       ├── values
+│       │       │   ├── colors.xml
+│       │       │   ├── dimens.xml
+│       │       │   ├── strings.xml
+│       │       │   └── themes.xml
+│       │       ├── values-land
+│       │       │   └── dimens.xml
+│       │       ├── values-night
+│       │       │   └── themes.xml
+│       │       ├── values-w1240dp
+│       │       │   └── dimens.xml
+│       │       ├── values-w600dp
+│       │       │   └── dimens.xml
+│       │       └── xml
+│       │           ├── backup_rules.xml
+│       │           └── data_extraction_rules.xml
+│       └── test
+│           └── java
+│               └── com
+│                   └── me
+│                       └── projectniaspo
+│                           └── ExampleUnitTest.java
+├── build.gradle
+├── docker
+│   ├── artifacts
+│   ├── docker-compose.yml
+│   ├── Dockerfile-artifact-repo
+│   ├── Dockerfile-emulator
+│   ├── Dockerfile-gradle
+│   ├── Dockerfile-linter
+│   ├── Dockerfile-novnc
+│   ├── start-server.sh
+│   ├── install_and_run.sh
+│   ├── nginx.conf
+│   └── run-emulator.sh
+├── gradle
+│   └── wrapper
+│       ├── gradle-wrapper.jar
+│       └── gradle-wrapper.properties
+├── gradle.properties
+├── gradlew
+├── gradlew.bat
+├── local.properties
+├── README.md
+└── settings.gradle
 ```
-    
+ ------------------------
 ## Подробности реализации
 
 1. Docker Compose
+
 Сервисы:
 
 * xvfb: Виртуальный дисплей для работы эмулятора.
@@ -109,7 +218,7 @@ healthcheck:
 
 3. Скрипт запуска
 
-run-emulator.sh управляет состоянием эмулятора:
+``run-emulator.sh`` управляет состоянием эмулятора:
 
 ```bash
 boot_completed=""
@@ -119,19 +228,20 @@ while [ "$boot_completed" != "1" ]; do
     sleep 5
 done
 ```
-
+------------------------
 ## FAQ
 
 1. Почему эмулятор не запускается?
 
-Проверьте доступность /dev/kvm на хосте.
+Проверьте доступность ``/dev/kvm`` на хосте.
 
-Убедитесь, что указаны правильные переменные среды (DISPLAY, ADB_SERVER_HOST).
+Убедитесь, что указаны правильные переменные среды (``DISPLAY``, ``ADB_SERVER_HOST)``.
 
 2. Можно ли запускать проект без Docker?
 
 Нет, проект ориентирован на контейнеризацию для обеспечения стабильной работы.
 
+------------------------
 ## Контакты
 
 Автор: Михаил
