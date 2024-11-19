@@ -59,8 +59,6 @@ services:
     networks:
       - my-network
     mem_limit: 8g
-    storage_opt:
-        size: 12G
     cpus: "2.0"
     healthcheck:
       test: ["CMD", "adb", "shell", "getprop", "sys.boot_completed"]
