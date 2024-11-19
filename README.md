@@ -221,6 +221,8 @@ emulator:
       retries: 10
       start_period: 60s
       timeout: 5s
+    mem_limit: 8g
+    cpus: "2.0"
 ```
 
 3. Скрипт запуска
