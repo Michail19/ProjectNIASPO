@@ -217,6 +217,15 @@ healthcheck:
 ``run-emulator.sh`` управляет состоянием эмулятора:
 
 ```bash
+for i in {1..10}; do
+    if adb get-state >/adb-shared/adb.log 2>&1; then
+        echo "ADB is responding."
+        break
+    fi
+    echo "Waiting for adb to respond... (Attempt $i)"
+    sleep 2
+done
+
 boot_completed=""
 while [ "$boot_completed" != "1" ]; do
     boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
