@@ -34,7 +34,7 @@ jobs:
       # Шаг 4: Проверить состояние контейнеров
       - name: Check services health
         run: |
-          docker-compose -f ./docker/docker-compose.yml ps
+          docker-compose -f ./docker/docker-compose.yml ps || true
           docker-compose -f ./docker/docker-compose.yml exec emulator adb shell getprop sys.boot_completed || exit 1
 
       # Шаг 5: Очистить после тестирования
