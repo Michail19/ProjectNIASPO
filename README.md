@@ -63,7 +63,8 @@ docker-compose ps
 
 ------------------------
 ## Запуск
-
+
+
 ### Проверка эмулятора
 
 Чтобы убедиться, что эмулятор запущен и готов к использованию:
@@ -78,7 +79,8 @@ adb devices
 List of devices attached
 emulator-5554 device
 ```
-
+
+
 ### Установка APK
 
 Для тестирования приложения, можно загрузить файл APK в контейнер:
@@ -187,6 +189,11 @@ ProjectNIASPO
 │   └── wrapper
 │       ├── gradle-wrapper.jar
 │       └── gradle-wrapper.properties
+├── .github
+│   └── workflows
+│       └── ci-cd.yml
+├── .gitattributes
+├── .gitignore
 ├── gradle.properties
 ├── gradlew
 ├── gradlew.bat
