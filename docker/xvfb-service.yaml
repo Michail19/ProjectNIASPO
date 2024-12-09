@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: xvfb
+spec:
+  selector:
+    app: xvfb
+  ports:
+  - port: 80
+    targetPort: 80

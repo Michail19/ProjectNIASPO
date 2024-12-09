@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: novnc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: novnc
+  template:
+    metadata:
+      labels:
+        app: novnc
+    spec:
+      containers:
+      - name: novnc
+        image: docker-novnc:latest
+        env:
+        - name: DISPLAY
+          value: ":99"
+        volumeMounts:
+        - mountPath: /tmp/.X11-unix
+          name: x11-volume
+        securityContext:
+          capabilities:
+            add: ["SYS_ADMIN"]
+        command: ["/app/start-server.sh"]
+      volumes:
+      - name: x11-volume
+        hostPath:
+          path: /tmp/.X11-unix

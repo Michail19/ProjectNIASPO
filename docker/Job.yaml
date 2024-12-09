@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: linter
+spec:
+  template:
+    metadata:
+      labels:
+        app: linter
+    spec:
+      containers:
+      - name: linter
+        image: docker-linter:latest
+        volumeMounts:
+        - mountPath: /app
+          name: app-volume
+        workingDir: /app
+        command: ["ktlint"]
+      volumes:
+      - name: app-volume
+        persistentVolumeClaim:
+          claimName: app-volume-claim
+      restartPolicy: Never
+  backoffLimit: 3

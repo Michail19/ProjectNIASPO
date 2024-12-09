@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: artifact-repo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: artifact-repo
+  template:
+    metadata:
+      labels:
+        app: artifact-repo
+    spec:
+      containers:
+      - name: artifact-repo
+        image: docker-artifact-repo:latest
+        volumeMounts:
+        - mountPath: /artifacts
+          name: artifacts-volume
+        command: ["sleep", "infinity"]
+      volumes:
+      - name: artifacts-volume
+        persistentVolumeClaim:
+          claimName: app-volume-claim

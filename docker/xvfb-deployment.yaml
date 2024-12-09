@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xvfb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: xvfb
+  template:
+    metadata:
+      labels:
+        app: xvfb
+    spec:
+      containers:
+      - name: xvfb
+        image: docker-xvfb:latest
+        env:
+        - name: DISPLAY
+          value: ":99"
+        volumeMounts:
+        - mountPath: /tmp/.X11-unix
+          name: x11-volume
+        securityContext:
+          capabilities:
+            add: ["SYS_ADMIN"]
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "1.5"
+      volumes:
+      - name: x11-volume
+        hostPath:
+          path: /tmp/.X11-unix

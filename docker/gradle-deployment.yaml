@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gradle
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gradle
+  template:
+    metadata:
+      labels:
+        app: gradle
+    spec:
+      containers:
+      - name: gradle
+        image: docker-gradle:latest
+        env:
+        - name: ADB_SERVER_HOST
+          value: "emulator"
+        - name: ADB_SERVER_PORT
+          value: "5037"
+        - name: ADB_SERVER_SOCKET
+          value: "tcp:emulator:5037"
+        volumeMounts:
+        - mountPath: /adb-shared
+          name: adb-shared-volume
+        securityContext:
+          capabilities:
+            add: ["SYS_ADMIN"]
+        command: ["bash", "-c", "export ADB_SERVER_SOCKET=tcp:emulator:5037 && adb devices && ./install_and_run.sh"]
+      volumes:
+      - name: adb-shared-volume
+        persistentVolumeClaim:
+          claimName: adb-shared-pvc

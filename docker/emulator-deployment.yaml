@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emulator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: emulator
+  template:
+    metadata:
+      labels:
+        app: emulator
+    spec:
+      containers:
+      - name: emulator
+        image: docker-emulator:latest
+        env:
+        - name: DISPLAY
+          value: ":99"
+        - name: ADB_SERVER_HOST
+          value: "emulator"
+        - name: ADB_SERVER_PORT
+          value: "5037"
+        - name: ADB_SERVER_SOCKET
+          value: "tcp:emulator:5037"
+        volumeMounts:
+        - mountPath: /app
+          name: app-volume
+        - mountPath: /tmp/.X11-unix
+          name: x11-volume
+        resources:
+          limits:
+            memory: "8Gi"
+            cpu: "2.0"
+        command: ["./run-emulator.sh", "-no-host-only"]
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["SYS_ADMIN"]
+      volumes:
+      - name: app-volume
+        persistentVolumeClaim:
+          claimName: app-volume-claim
+      - name: x11-volume
+        hostPath:
+          path: /tmp/.X11-unix
