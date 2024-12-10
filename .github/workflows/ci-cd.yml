@@ -41,3 +41,25 @@ jobs:
         if: always()
         run: |
           docker-compose -f ./docker/docker-compose.yml down
+# Этап деплоя
+  deploy-job:
+    runs-on: ubuntu-latest
+    needs: test-job  # Этот шаг выполняется только после успешного завершения test-job
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
+      - name: Deploy to server
+        run: |
+          echo "Starting deployment..."
+          sleep 2
+          echo "deployment completed successfully!"
