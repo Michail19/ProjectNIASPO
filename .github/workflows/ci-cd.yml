@@ -44,7 +44,7 @@ jobs:
 # Этап деплоя
   deploy-job:
     runs-on: ubuntu-latest
-    needs: test-job  # Этот шаг выполняется только после успешного завершения test-job
+    needs: test-docker-compose
 
     steps:
       - name: Checkout code
