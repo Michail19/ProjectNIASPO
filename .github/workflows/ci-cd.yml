@@ -40,7 +40,7 @@ jobs:
       - name: Clean up
         if: always()
         run: |
-          docker-compose -f ./docker/docker-compose.yml down
+          docker-compose -f ./docker/docker-compose.yml stop
 
 
   deploy:
@@ -73,3 +73,9 @@ jobs:
       - name: Build and push Docker images
         run: |
           docker-compose -f ./docker/docker-compose.yml push
+
+    # Шаг 6: Очистить после тестирования
+      - name: Clean up
+        if: always()
+        run: |
+          docker-compose -f ./docker/docker-compose.yml down
