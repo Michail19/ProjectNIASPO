@@ -26,21 +26,22 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y docker-compose
 
-      # Шаг 3: Собрать контейнеры
-      - name: Build Docker images
+      # Шаг 3: Собрать и запустить контейнеры
+      - name: Build and start containers
         run: |
-          docker-compose -f ./docker/docker-compose.yml build
+          docker-compose -f ./docker/docker-compose.yml up --build -d
 
-      # Шаг 4: Сохранить образы в артефакты
-      - name: Save Docker images as artifacts
+      # Шаг 4: Проверить состояние контейнеров
+      - name: Check services health
         run: |
-          docker save -o docker-images.tar $(docker-compose -f ./docker/docker-compose.yml config | awk '/image:/ { print $2 }')
-        # Сохранение артефакта
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: docker-images
-          path: docker-images.tar
+          docker-compose -f ./docker/docker-compose.yml ps || true
+
+      # Шаг 5: Очистить после тестирования
+      - name: Clean up
+        if: always()
+        run: |
+          docker-compose -f ./docker/docker-compose.yml down
+
 
   deploy:
     runs-on: ubuntu-latest
@@ -51,17 +52,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Шаг 2: Загрузить артефакты
-      - name: Download Docker images artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: docker-images
-          path: docker-images.tar
+      # Шаг 2: Настроить Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-      # Шаг 3: Загрузить Docker-образы
-      - name: Load Docker images
+      # Шаг 3: Установить Docker Compose
+      - name: Install Docker Compose
         run: |
-          docker load -i docker-images.tar
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
 
       # Шаг 4: Войти в Docker Hub
       - name: Log in to Docker Hub
@@ -70,7 +69,8 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Шаг 5: Push Docker images
-      - name: Push Docker images to Docker Hub
+      # Шаг 5: Собрать и загрузить образы в Docker Hub
+      - name: Build and push Docker images
         run: |
+          docker-compose -f ./docker/docker-compose.yml build
           docker-compose -f ./docker/docker-compose.yml push
