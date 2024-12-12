@@ -48,19 +48,24 @@ jobs:
     needs: integration
 
     steps:
+      # Шаг 1: Клонировать репозиторий
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Шаг 2: Настроить Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Install Docker Compose
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
+      # Шаг 3: Войти в Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Deploy to server
-        run: |
-          echo "Starting deployment..."
-          sleep 2
-          echo "deployment completed successfully!"
+      # Шаг 4: Собрать и загрузить образ в Docker Hub
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/your-repo-name:latest
