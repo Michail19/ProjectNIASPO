@@ -5,7 +5,7 @@ services:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile-xvfb
-    image: docker-xvfb:latest
+    image: michail465/docker-xvfb:latest
     environment:
       - DISPLAY=:99
     volumes:
@@ -29,7 +29,7 @@ services:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile-emulator
-    image: docker-emulator:latest
+    image: michail465/docker-emulator:latest
     ports:
       - "5554:5554"
       - "5555:5555"
@@ -67,7 +67,7 @@ services:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile-novnc
-    image: docker-novnc:latest
+    image: michail465/docker-novnc:latest
     ports:
       - "5900:5900"
       - "6080:6080"
@@ -89,7 +89,7 @@ services:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile-linter
-    image: docker-linter:latest
+    image: michail465/docker-linter:latest
     volumes:
       - .:/app
     working_dir: /app
@@ -101,7 +101,7 @@ services:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile-gradle
-    image: docker-gradle:latest
+    image: michail465/docker-gradle:latest
     networks:
       - my-network
     privileged: true
@@ -122,7 +122,7 @@ services:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile-artifact-repo
-    image: docker-artifact-repo:latest
+    image: michail465/docker-artifact-repo:latest
     volumes:
       - ${PWD}/docker/artifacts:/artifacts
     command: sleep infinity
