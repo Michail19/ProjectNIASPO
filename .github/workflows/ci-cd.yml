@@ -32,7 +32,7 @@ jobs:
           export ANDROID_SDK_ROOT=$HOME/android-sdk
           export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$PATH
           yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
-          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2" "system-images;android-33;google_apis;x86_64" "emulator"
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-35" "build-tools;33.0.2" "system-images;android-35;google_apis;x86_64" "emulator"
 
       - name: Build and run tests
         run: |
@@ -41,12 +41,12 @@ jobs:
       - name: Verify system images
         run: |
           $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --list
-          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "system-images;android-33;google_apis;x86_64"
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "system-images;android-35;google_apis;x86_64"
           echo "::add-path::$ANDROID_SDK_ROOT/platform-tools"
 
       - name: Create Android Virtual Device (AVD)
         run: |
-          echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n test_device -k "system-images;android-33;google_apis;x86_64" -d pixel
+          echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n test_device -k "system-images;android-35;google_apis;x86_64" -d pixel
 
       - name: Start Android Emulator
         run: |
