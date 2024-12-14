@@ -47,15 +47,12 @@ jobs:
         run: |
           echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n test_device -k "system-images;android-35;google_apis;x86_64" -d pixel
 
-      - name: Start Android Emulator
+      - name: Start Android Emulator and run UI tests
         run: |
           export PATH=$PATH:/usr/local/lib/android/sdk/platform-tools
           source ~/.bashrc
           $ANDROID_SDK_ROOT/emulator/emulator -avd test_device -no-snapshot -no-audio -no-window -partition-size 2048 -accel off &
           adb wait-for-device &
-
-      - name: Run UI tests
-        run: |
           ./gradlew connectedAndroidTest
 
 
