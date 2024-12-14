@@ -21,37 +21,41 @@ jobs:
           distribution: 'zulu'
           java-version: '11'
 
-      - name: Install dependencies
+      - name: Install Android SDK
         run: |
           sudo apt-get update
           sudo apt-get install -y wget unzip
-
-      - name: Set up Android SDK
-        uses: actions/setup-android@v2
-        with:
-          api-level: 35
-          target: google_apis
-          arch: x86_64
-          components: build-tools;33.0.2
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+          unzip cmdline-tools.zip -d $HOME/android-sdk/cmdline-tools
+          mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
+          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$PATH
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-35" "build-tools;33.0.2" "system-images;android-35;google_apis;x86_64" "emulator"
 
       - name: Build and run tests
         run: ./gradlew test
 
-      - name: Create and Start Emulator
+      - name: Create Android Virtual Device (AVD)
         run: |
-          echo "no" | avdmanager create avd -n test_device -k "system-images;android-35;google_apis;x86_64" -d pixel
-          emulator -avd test_device -no-snapshot -no-audio -no-window -partition-size 2048 -gpu swiftshader_indirect -accel off &
-          timeout 120 adb wait-for-device || { echo "Emulator did not start in time"; exit 1; }
+          echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n test_device -k "system-images;android-35;google_apis;x86_64" -d pixel
 
-      - name: Install and Test App
+      - name: Start Emulator and Run Tests
         run: |
+          export PATH=$PATH:/usr/local/lib/android/sdk/platform-tools
+          export ADB_SERVER_PORT=5037
+          adb start-server
+          $ANDROID_SDK_ROOT/emulator/emulator -avd test_device -no-snapshot -no-audio -no-window -partition-size 2048 -gpu swiftshader_indirect -accel off &
+          timeout 120 adb wait-for-device || { echo "Emulator did not start in time"; exit 1; }
           adb install -r app/build/outputs/apk/debug/app-debug.apk
           adb shell monkey -p com.me.projectniaspo -c android.intent.category.LAUNCHER 1 || { echo "App failed to launch"; exit 1; }
-
-      - name: Stop Emulator
+      
+    - name: Stop Emulator
         run: |
           adb -s emulator-5554 emu kill
           adb kill-server
+
 
 
   integration:
