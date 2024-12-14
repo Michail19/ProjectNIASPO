@@ -51,11 +51,14 @@ jobs:
         run: |
           export PATH=$PATH:/usr/local/lib/android/sdk/platform-tools
           export ADB_SERVER_PORT=5037
-          export ADB_SERVER_SOCKET=tcp:emulator:5037
 
-          # Запуск ADB-сервера
+          # Убедитесь, что .ini файл доступен
+          mkdir -p /home/runner/.android
+          touch /home/runner/.android/emu-update-last-check.ini
+
+          # Запуск ADB сервера
           adb -a -P 5037 nodaemon server &
-          sleep 5  # Подождать, чтобы сервер успел запуститься
+          sleep 5  # Подождите, пока сервер запустится
 
           # Запуск эмулятора
           $ANDROID_SDK_ROOT/emulator/emulator \
@@ -68,19 +71,18 @@ jobs:
             -gpu swiftshader_indirect \
             -accel off &
           
-          sleep 30  # Дать эмулятору достаточно времени для запуска
+          sleep 60  # Дайте эмулятору достаточно времени на запуск
 
-          # Проверка, что устройство доступно
-          adb wait-for-device
-          adb devices
+          # Проверка статуса ADB и устройств
+          adb devices || { echo "ADB server failed to start"; exit 1; }
 
           # Сборка приложения
           ./gradlew assembleDebug
 
-          # Установка APK на эмулятор
+          # Установка APK
           adb -s emulator-5554 install -r app/build/outputs/apk/debug/app-debug.apk
 
-          # Запуск приложения через ADB Monkey
+          # Запуск приложения
           adb -s emulator-5554 shell monkey -p com.me.projectniaspo -c android.intent.category.LAUNCHER 1
 
 
