@@ -51,7 +51,7 @@ jobs:
           adb install -r app/build/outputs/apk/debug/app-debug.apk
           adb shell monkey -p com.me.projectniaspo -c android.intent.category.LAUNCHER 1 || { echo "App failed to launch"; exit 1; }
       
-    - name: Stop Emulator
+      - name: Stop Emulator
         run: |
           adb -s emulator-5554 emu kill
           adb kill-server
