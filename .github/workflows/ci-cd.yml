@@ -41,15 +41,16 @@ jobs:
       - name: Verify system images
         run: |
           $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --list
-          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "system-images;android-35;google_apis;x86_64"
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "system-images;android-33;google_apis;x86_64"
+          echo "::add-path::$ANDROID_SDK_ROOT/platform-tools"
 
       - name: Create Android Virtual Device (AVD)
         run: |
-          echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n test_device -k "system-images;android-35;google_apis;x86_64" -d pixel
+          echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n test_device -k "system-images;android-33;google_apis;x86_64" -d pixel
 
       - name: Start Android Emulator
         run: |
-          $ANDROID_SDK_ROOT/emulator/emulator -avd test_device -no-snapshot -no-audio -no-window &
+          $ANDROID_SDK_ROOT/emulator/emulator -avd test_device -no-snapshot -no-audio -no-window -partition-size 2048 &
           adb wait-for-device
 
       - name: Run UI tests (if applicable)
