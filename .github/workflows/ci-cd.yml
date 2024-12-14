@@ -49,10 +49,12 @@ jobs:
 
       - name: Start Android Emulator
         run: |
+          export PATH=$PATH:/usr/local/lib/android/sdk/platform-tools
+          source ~/.bashrc
           $ANDROID_SDK_ROOT/emulator/emulator -avd test_device -no-snapshot -no-audio -no-window -partition-size 2048 -accel off &
           adb wait-for-device
 
-      - name: Run UI tests (if applicable)
+      - name: Run UI tests
         run: |
           ./gradlew connectedAndroidTest
 
