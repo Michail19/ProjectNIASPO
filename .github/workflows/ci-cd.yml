@@ -54,7 +54,7 @@ jobs:
           $ANDROID_SDK_ROOT/emulator/emulator -avd test_device -no-snapshot -no-audio -no-window -partition-size 2048 -gpu swiftshader_indirect -accel off &
           adb wait-for-device &
           sleep 10
-          adb shell getprop sys.boot_completed | grep 1
+          adb devices
           ./gradlew connectedDebugAndroidTest 
 
 
