@@ -51,9 +51,10 @@ jobs:
         run: |
           export PATH=$PATH:/usr/local/lib/android/sdk/platform-tools
           source ~/.bashrc
-          $ANDROID_SDK_ROOT/emulator/emulator -avd test_device -no-snapshot -no-audio -no-window -partition-size 2048 -accel off &
+          $ANDROID_SDK_ROOT/emulator/emulator -avd test_device -no-snapshot -no-audio -no-window -partition-size 2048 -gpu swiftshader_indirect -accel off &
           adb wait-for-device &
-          ./gradlew connectedAndroidTest
+          adb shell getprop sys.boot_completed | grep 1
+          ./gradlew connectedDebugAndroidTest 
 
 
   integration:
