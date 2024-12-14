@@ -30,18 +30,21 @@ jobs:
           unzip cmdline-tools.zip -d $HOME/android-sdk/cmdline-tools
           mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
           export ANDROID_SDK_ROOT=$HOME/android-sdk
-          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
+          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$PATH
           yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
-          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
-
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2" "system-images;android-33;google_apis;x86_64" "emulator"
 
       - name: Build and run tests
         run: |
           ./gradlew test
 
+      - name: Create Android Virtual Device (AVD)
+        run: |
+          echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n test_device -k "system-images;android-33;google_apis;x86_64" -d pixel
+
       - name: Start Android Emulator
         run: |
-          $ANDROID_HOME/emulator/emulator -avd test_device -no-snapshot -no-audio -no-window &
+          $ANDROID_SDK_ROOT/emulator/emulator -avd test_device -no-snapshot -no-audio -no-window &
           adb wait-for-device
 
       - name: Run UI tests (if applicable)
