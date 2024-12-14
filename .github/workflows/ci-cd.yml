@@ -57,7 +57,7 @@ jobs:
           touch /home/runner/.android/emu-update-last-check.ini
 
           # Запуск ADB сервера
-          adb -a -P 5037 nodaemon server &
+          adb start-server &
           sleep 5  # Подождите, пока сервер запустится
 
           # Запуск эмулятора
@@ -75,6 +75,8 @@ jobs:
 
           # Проверка статуса ADB и устройств
           adb devices || { echo "ADB server failed to start"; exit 1; }
+          adb connect localhost:5554 &
+          adb wait-for-device &
 
           # Сборка приложения
           ./gradlew assembleDebug
