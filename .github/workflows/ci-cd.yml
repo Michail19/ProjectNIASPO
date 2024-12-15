@@ -96,11 +96,12 @@ jobs:
 
           # Ждем завершения загрузки эмулятора
           boot_completed=""
-          for i in {1..10}; do
+          while [ "$boot_completed" != "1" ]; do
               boot_completed=$(adb shell getprop sys.boot_completed 2>/usr/local/lib/android/sdk/platform-tools/adb.log | tr -d '\r')
               echo "Waiting for emulator to boot..."
               sleep 5
           done
+          echo "Emulator boot completed."
           
           # Установка APK
           for i in {1..10}; do
