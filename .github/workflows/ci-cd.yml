@@ -72,6 +72,7 @@ jobs:
             -accel off &
           
           sleep 60  # Дайте эмулятору достаточно времени на запуск
+          
           # Проверка статуса ADB и устройств
           adb devices || { echo "ADB server failed to start"; exit 1; }
           ls -1
@@ -89,9 +90,20 @@ jobs:
           
           # Сборка приложения
           ./gradlew assembleDebug
+
+          # Проверка статуса ADB и устройств
+          adb devices || { echo "ADB server failed to start"; exit 1; }
           
           # Установка APK
-          adb -s emulator-5554 install -r app/build/outputs/apk/debug/app-debug.apk
+          for i in {1..10}; do
+              if adb install app/build/outputs/apk/debug/app-debug.apk; then
+                  echo "APK installed successfully"
+                  break
+              else
+                  echo "Retrying installation..."
+                  sleep 10
+              fi
+          done
           
           # Запуск приложения
           adb -s emulator-5554 shell monkey -p com.me.projectniaspo -c android.intent.category.LAUNCHER 1
