@@ -41,7 +41,7 @@ jobs:
       - name: Verify system images
         run: |
           $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --list
-          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "system-images;android-22;default;x86" pixel
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "system-images;android-22;default;x86"
           
       - name: Create Android Virtual Device (AVD)
         run: |
