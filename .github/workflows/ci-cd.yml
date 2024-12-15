@@ -45,16 +45,16 @@ jobs:
           
       - name: Create Android Virtual Device (AVD)
         run: |
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
+          mkdir -p $HOME/.android/avd
           echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n test_device_api_22 -k "system-images;android-22;default;x86" -d pixel
           
       - name: Start Android Emulator and run UI tests
         run: |
           export PATH=$PATH:/usr/local/lib/android/sdk/platform-tools
           export ADB_SERVER_PORT=5037
-          
-          # Убедитесь, что .ini файл доступен
-          mkdir -p $ANDROID_SDK_HOME/avd
-          touch $ANDROID_SDK_HOME/avd/emu-update-last-check.ini
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
+          export PATH=$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/platform-tools:$PATH
           
           # Запуск ADB сервера
           adb start-server &
