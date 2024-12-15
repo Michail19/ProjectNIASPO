@@ -121,6 +121,7 @@ jobs:
       
       - name: Stop Emulator
         run: |
+          export PATH=$PATH:/usr/local/lib/android/sdk/platform-tools
           adb -s emulator-5554 emu kill
           adb kill-server
 
