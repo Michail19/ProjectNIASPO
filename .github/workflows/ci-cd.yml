@@ -47,7 +47,7 @@ jobs:
         run: |
           export ANDROID_SDK_ROOT=$HOME/android-sdk
           mkdir -p $HOME/.android/avd
-          echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n test_device_api_22 -k "system-images;android-22;default;x86" -d pixel
+          echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n test_device -k "system-images;android-22;default;x86" -d pixel
           
       - name: Start Android Emulator and run UI tests
         run: |
