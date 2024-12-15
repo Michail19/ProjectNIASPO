@@ -49,7 +49,6 @@ jobs:
           
       - name: Start Android Emulator and run UI tests
         run: |
-          which adb
           export PATH=$PATH:/usr/local/lib/android/sdk/platform-tools
           export ADB_SERVER_PORT=5037
           
