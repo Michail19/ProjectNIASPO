@@ -93,7 +93,7 @@ jobs:
 
           # Проверка статуса ADB и устройств
           adb devices || { echo "ADB server failed to start"; exit 1; }
-          adb shell getprop sys.boot_completed
+          echo adb shell getprop sys.boot_completed
           
           # Установка APK
           for i in {1..10}; do
