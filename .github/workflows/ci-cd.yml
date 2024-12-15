@@ -49,6 +49,8 @@ jobs:
           
       - name: Start Android Emulator and run UI tests
         run: |
+          which adb
+          export PATH=$PATH:/usr/local/lib/android/sdk/platform-tools
           export ADB_SERVER_PORT=5037
           
           # Убедитесь, что .ini файл доступен
@@ -73,7 +75,6 @@ jobs:
           sleep 60  # Дайте эмулятору достаточно времени на запуск
           # Проверка статуса ADB и устройств
           adb devices || { echo "ADB server failed to start"; exit 1; }
-          adb connect localhost:5554 &
           adb wait-for-device &
           
           # Сборка приложения
