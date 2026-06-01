@@ -1,5 +1,5 @@
 # Используем базовый образ с Java и необходимыми утилитами
-FROM openjdk:11
+FROM eclipse-temurin:11
 
 # Установка необходимых инструментов
 RUN apt-get update && \

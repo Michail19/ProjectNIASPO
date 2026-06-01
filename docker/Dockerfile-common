@@ -1,5 +1,5 @@
 # Используем базовый образ с поддержкой JDK и Android SDK
-FROM openjdk:11-jdk-slim
+FROM eclipse-temurin:11
 
 # Установка зависимостей и утилит
 RUN apt-get update && apt-get install -y --no-install-recommends \
